@@ -1,0 +1,24 @@
+# .NET (shared, web, mobile)
+bin/
+obj/
+*.user
+.vs/
+
+# Go (backend)
+*.exe 
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out 
+vendor/
+go.work
+go.work.sum
+
+# env files
+.env
+
+# OS/editor cruft
+.DS_Store
+
