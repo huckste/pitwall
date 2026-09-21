@@ -25,5 +25,5 @@ go.work.sum
 # noodle
 backend/pitwall-api/.environments/
 backend/pitwall-api/.noodle/
-bhackend/pitwall-api/.timeline/
+bhackend/pitwall-api/.timeline/.
 
