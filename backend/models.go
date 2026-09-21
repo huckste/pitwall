@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"pitwall/backend/ocb"
+	"time"
+)
 
 type Series string
 
@@ -45,4 +48,23 @@ type RaceResults struct {
 	StartPosition  *int    `json:"startPosition,omitempty"`
 	Points         float64 `json:"points"`
 	Status         string  `json:"status"`
+}
+
+func mapOCBDriver(d ocb.Driver, series Series) Driver {
+
+	var nationality *string
+
+	if d.Country.Name != nil {
+		nationality = d.Country.Name
+	}
+
+	return Driver{
+		ID:           d.ID,
+		FirstName:    d.FirstName,
+		LastName:     d.LastName,
+		Series:       series,
+		DriverNumber: d.Number,
+		TeamName:     nil,
+		Nationality:  nationality,
+	}
 }
