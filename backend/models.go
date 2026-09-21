@@ -8,19 +8,19 @@ import (
 type Series string
 
 const (
-	Formula_1      Series = "Formula1"
-	NASCAR         Series = "Nascar"
-	NASCAR_Xfinity Series = "NascarXfinity"
-	NASCAR_Trucks  Series = "NascarTrucks"
-	IndyCar        Series = "Indycar"
-	Moto_GP        Series = "MotoGp"
-	Moto_2         Series = "Moto2"
-	Moto_3         Series = "Moto3"
-	Formula_E      Series = "FormulaE"
-	Formula_2      Series = "Formula2"
-	Formula_3      Series = "Formula3"
-	WEC            Series = "Wec"
-	WRC            Series = "Wrc"
+	Formula_1      Series = "formula1"
+	NASCAR         Series = "nascar"
+	NASCAR_Xfinity Series = "nascar-xfinity"
+	NASCAR_Trucks  Series = "nascar-truck"
+	IndyCar        Series = "indycar"
+	Moto_GP        Series = "moto-gp"
+	Moto_2         Series = "moto2"
+	Moto_3         Series = "moto3"
+	Formula_E      Series = "formula-e"
+	Formula_2      Series = "formula2"
+	Formula_3      Series = "formula3"
+	WEC            Series = "wec"
+	WRC            Series = "wrc"
 )
 
 type Driver struct {
