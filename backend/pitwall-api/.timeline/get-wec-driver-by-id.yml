@@ -1,0 +1,156 @@
+- id: 27a24305-7675-4fb0-ad2e-6078eba96a3e
+  timestamp: 1790028026785
+  envName: development
+  network:
+    - timeMs: 0.005452000070363283
+      type: proxy
+      message: 'Proxy: direct'
+    - timeMs: 0.0910100000910461
+      type: request
+      message: >-
+        GET
+        https://api.ocblacktop.com/v1/wec/drivers/4a57698b-78a8-4ce8-a25b-98d3c77a2408
+    - timeMs: 239.17190100019798
+      type: response
+      message: 200 OK - 27 headers
+    - timeMs: 239.22531800018623
+      type: body
+      message: Body received - 2035 bytes
+    - timeMs: 239.23232200019993
+      type: complete
+      message: Completed in 239ms
+  request:
+    id: get-wec-driver-by-id
+    name: Get WEC driver by id
+    method: GET
+    url: https://api.ocblacktop.com/v1/wec/drivers/4a57698b-78a8-4ce8-a25b-98d3c77a2408
+    headers: {}
+    params: []
+    pathParams:
+      - name: driverId
+        value: 4a57698b-78a8-4ce8-a25b-98d3c77a2408
+        enabled: true
+    auth:
+      type: api_key
+      key: X-API-KEY
+      value: '[REDACTED]'
+      placement: header
+  response:
+    status: 200
+    statusText: OK
+    headers:
+      access-control-expose-headers: RateLimit-Limit,RateLimit-Remaining,RateLimit-Reset,X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset,X-RateLimit-Limit-Day,X-RateLimit-Remaining-Day,X-RateLimit-Reset-Day,X-RateLimit-Limit-Month,X-RateLimit-Remaining-Month,X-RateLimit-Reset-Month,Retry-After
+      alt-svc: h3=":443"; ma=86400
+      cf-cache-status: DYNAMIC
+      cf-ray: a3ec57be0d032dbb-MCI
+      connection: keep-alive
+      content-encoding: br
+      content-length: '737'
+      content-type: application/json; charset=utf-8
+      date: Mon, 21 Sep 2026 22:00:26 GMT
+      etag: W/"7f3-519QrjTglSlL4pbZLQjhjLPBNTU"
+      nel: '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      ratelimit-limit: '60'
+      ratelimit-remaining: '59'
+      ratelimit-reset: '34'
+      report-to: '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=nWoZbDQb62niipzIx%2F0AUzb1YBdyOSiOzICdr0S%2B0L%2FW38oya3o4viXuni%2FQD%2F7teg86oFkX8%2F8HeK1wEsRDLwGVBxfcS%2FPsCnZL9%2BkXc36Xr%2BM7oUqh57MsoTV2KE6Er9E2jmM%3D"}]}'
+      rndr-id: 041a7312-8b93-48fa
+      server: cloudflare
+      server-timing: app;dur=88.39;desc="server processing"
+      vary: Origin, Accept-Encoding
+      x-cache: MISS
+      x-ratelimit-limit: '60'
+      x-ratelimit-limit-month: '7500'
+      x-ratelimit-remaining: '59'
+      x-ratelimit-remaining-month: '7488'
+      x-ratelimit-reset: '34'
+      x-ratelimit-reset-month: '2590125'
+      x-render-origin-server: Render
+    body: >-
+      {"id":"4a57698b-78a8-4ce8-a25b-98d3c77a2408","firstName":"Jack","lastName":"Aitken","nickName":null,"number":89,"code":"AIT","birthDate":"1995-09-23","country":{"name":"United
+      Kingdom","twoCode":"GB","threeCode":"GBR"},"socials":{"twitter":null,"youtube":null,"website":null,"bluesky":null,"twitch":null,"instagram":null,"facebook":null,"tiktok":null},"careerHistory":[{"teamId":"80cf29aa-e4a8-48ea-82c7-d39898cd9c4f","teamName":"Cadillac
+      Hertz Team Jota","teamShortName":"Cadillac Hertz Team
+      Jota","teamColor":null,"startYear":2026,"endYear":2026},{"teamId":"1df044f6-70b3-4db7-9220-153c25e9db32","teamName":"Cadillac
+      Whelen","teamShortName":"Cadillac
+      Whelen","teamColor":null,"startYear":2025,"endYear":2025},{"teamId":"e39602fc-6ac8-415a-9675-4dfa412a1035","teamName":"Whelen
+      Cadillac Racing","teamShortName":"Whelen Cadillac
+      Racing","teamColor":null,"startYear":2024,"endYear":2024},{"teamId":"0735e8f7-234d-4d44-8757-aacdd34f5854","teamName":"Cadillac
+      Racing","teamShortName":"Cadillac
+      Racing","teamColor":null,"startYear":2023,"endYear":2023},{"teamId":"7eb9460b-cfa6-428c-9837-60de73f82445","teamName":"Action
+      Express Racing","teamShortName":"Action Express
+      Racing","teamColor":null,"startYear":2023,"endYear":2023},{"teamId":"6a72cb7a-8d6a-4efa-a891-6f43343b2d46","teamName":"Algarve
+      Pro Racing","teamShortName":"Algarve Pro
+      Racing","teamColor":null,"startYear":2022,"endYear":2022},{"teamId":"68faa8af-7f87-4911-af62-09b0744af1a3","teamName":"HWA
+      RACELAB","teamShortName":"HWA
+      RACELAB","teamColor":null,"startYear":2021,"endYear":2021},{"teamId":"f8ae29a9-3d93-4efd-9d70-ce69286c0a04","teamName":"Atlassian
+      Williams F1
+      Team","teamShortName":"Williams","teamColor":"#1868db","startYear":2020,"endYear":2020},{"teamId":"944597c4-be7f-40ef-8ba8-b41be9269c24","teamName":"Campos
+      Racing","teamShortName":"Campos
+      Racing","teamColor":null,"startYear":2019,"endYear":2020},{"teamId":"3717a091-f9a1-4c5e-a3b4-a93a666c80b8","teamName":"ART
+      Grand Prix","teamShortName":"ART Grand
+      Prix","teamColor":null,"startYear":2018,"endYear":2018}]}
+    timeMs: 239.27491200016811
+    size: 2035
+- id: 6bd13d05-113f-403d-be09-6c204368518a
+  timestamp: 1790028015193
+  envName: development
+  network:
+    - timeMs: 0.006631999975070357
+      type: proxy
+      message: 'Proxy: direct'
+    - timeMs: 0.11070200009271502
+      type: request
+      message: >-
+        GET
+        https://api.ocblacktop.com/v1/wec/driver/4a57698b-78a8-4ce8-a25b-98d3c77a2408
+    - timeMs: 69.34589300001971
+      type: response
+      message: 404 Not Found - 16 headers
+    - timeMs: 69.3740669998806
+      type: body
+      message: Body received - 113 bytes
+    - timeMs: 69.38009599992074
+      type: complete
+      message: Completed in 69ms
+  request:
+    id: get-wec-driver-by-id
+    name: Get WEC driver by id
+    method: GET
+    url: https://api.ocblacktop.com/v1/wec/driver/4a57698b-78a8-4ce8-a25b-98d3c77a2408
+    headers: {}
+    params: []
+    pathParams:
+      - name: driverId
+        value: 4a57698b-78a8-4ce8-a25b-98d3c77a2408
+        enabled: true
+    auth:
+      type: api_key
+      key: X-API-KEY
+      value: '[REDACTED]'
+      placement: header
+  response:
+    status: 404
+    statusText: Not Found
+    headers:
+      access-control-expose-headers: RateLimit-Limit,RateLimit-Remaining,RateLimit-Reset,X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset,X-RateLimit-Limit-Day,X-RateLimit-Remaining-Day,X-RateLimit-Reset-Day,X-RateLimit-Limit-Month,X-RateLimit-Remaining-Month,X-RateLimit-Reset-Month,Retry-After
+      alt-svc: h3=":443"; ma=86400
+      cf-cache-status: DYNAMIC
+      cf-ray: a3ec57769d052dbb-MCI
+      connection: keep-alive
+      content-encoding: br
+      content-length: '100'
+      content-type: application/json; charset=utf-8
+      date: Mon, 21 Sep 2026 22:00:15 GMT
+      etag: W/"71-nDqyXApe7/Ta2tw3GEJXrP4h5OY"
+      nel: '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      report-to: '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=5igY%2BA1MxVVKEAl7yx77QOlDmn%2FEZtkc8xjuf7OS1w95pa1KOJdJYZOJW1aO2FiNFNHZePmPBzjE%2B%2BX%2FV%2FzOpHM6C0KwJd8Gs97EX1opTTPxiOzCe79C6n8pf96Fc3FYumD33YU%3D"}]}'
+      rndr-id: 00736804-3220-480a
+      server: cloudflare
+      vary: Origin, Accept-Encoding
+      x-render-origin-server: Render
+    body: >-
+      {"message":"Cannot GET
+      /v1/wec/driver/4a57698b-78a8-4ce8-a25b-98d3c77a2408","error":"Not
+      Found","statusCode":404}
+    timeMs: 69.40621799998917
+    size: 113

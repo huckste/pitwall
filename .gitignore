@@ -22,3 +22,8 @@ go.work.sum
 # OS/editor cruft
 .DS_Store
 
+# noodle
+backend/pitwall-api/.environments/
+backend/pitwall-api/.noodle/
+bhackend/pitwall-api/.timeline/
+
