@@ -1,0 +1,18 @@
+name: Get F2 event sessions
+method: GET
+url: $api/formula2/events/:eventId/sessions
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: eventId
+    value: $f2_event_id
+capture:
+  f2_session_id:
+    value: body[3].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

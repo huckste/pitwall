@@ -1,0 +1,18 @@
+name: Get IndyCar season teams
+method: GET
+url: $api/indycar/seasons/:seasonId/teams
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: seasonId
+    value: $indycar_season_id
+capture:
+  indycar_team_id:
+    value: body[0].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

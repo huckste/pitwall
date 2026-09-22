@@ -1,0 +1,14 @@
+name: Get F3 driver by id
+method: GET
+url: $api/formula3/drivers/:driverId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: driverId
+    value: $f3_driver_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

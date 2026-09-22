@@ -1,0 +1,18 @@
+name: Get NASCAR season teams
+method: GET
+url: $api/nascar/seasons/:seasonId/teams
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: seasonId
+    value: $nascar_season_id
+capture:
+  nascar_team_id:
+    value: body[0].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

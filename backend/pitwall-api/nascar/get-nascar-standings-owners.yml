@@ -1,0 +1,11 @@
+name: Get NASCAR owner standings
+method: GET
+url: $api/nascar/standings/owners
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

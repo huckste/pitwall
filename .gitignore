@@ -5,6 +5,7 @@ obj/
 .vs/
 
 # Go (backend)
+backend/backend
 *.exe 
 *.exe~
 *.dll

@@ -1,0 +1,16 @@
+name: Get F1 session results
+method: GET
+url: $api/formula1/events/:eventId/sessions/:sessionId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: eventId
+    value: $f1_event_id
+  - name: sessionId
+    value: $f1_session_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

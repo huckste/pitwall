@@ -1,14 +1,9 @@
-name: Get WEC drivers
+name: Get NASCAR Xfinity driver standings
 method: GET
-url: $api/wec/drivers
+url: $api/nascar-xfinity/standings/drivers
 timeout: 30000
 followRedirects: true
 maxRedirects: 5
-params:
-  - name: page
-    value: '1'
-  - name: limit
-    value: '50'
 auth:
   type: api_key
   key: X-API-KEY

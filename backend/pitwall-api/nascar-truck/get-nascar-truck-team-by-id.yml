@@ -1,0 +1,14 @@
+name: Get NASCAR Truck team by id
+method: GET
+url: $api/nascar-truck/teams/:teamId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: teamId
+    value: $nascar_truck_team_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

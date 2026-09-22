@@ -1,0 +1,16 @@
+name: Get WEC session results
+method: GET
+url: $api/wec/events/:eventId/sessions/:sessionId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: eventId
+    value: $wec_event_id
+  - name: sessionId
+    value: $wec_session_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

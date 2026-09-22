@@ -1,0 +1,14 @@
+name: Get NASCAR Xfinity team by id
+method: GET
+url: $api/nascar-xfinity/teams/:teamId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: teamId
+    value: $nascar_xfinity_team_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

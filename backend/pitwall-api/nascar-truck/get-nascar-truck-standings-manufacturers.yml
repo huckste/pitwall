@@ -1,12 +1,9 @@
-name: Get WEC driver by id
+name: Get NASCAR Truck manufacturer standings
 method: GET
-url: $api/wec/drivers/:driverId
+url: $api/nascar-truck/standings/manufacturers
 timeout: 30000
 followRedirects: true
 maxRedirects: 5
-path_params:
-  - name: driverId
-    value: 4a57698b-78a8-4ce8-a25b-98d3c77a2408
 auth:
   type: api_key
   key: X-API-KEY

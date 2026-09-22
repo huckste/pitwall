@@ -1,0 +1,11 @@
+name: Get WEC standings
+method: GET
+url: $api/wec/standings
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

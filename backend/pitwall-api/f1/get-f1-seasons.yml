@@ -1,0 +1,20 @@
+name: Get F1 seasons
+method: GET
+url: $api/formula1/seasons
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+params:
+  - name: page
+    value: '1'
+  - name: limit
+    value: '20'
+capture:
+  f1_season_id:
+    value: body.data[0].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

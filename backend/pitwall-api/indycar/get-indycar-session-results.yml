@@ -1,0 +1,16 @@
+name: Get IndyCar session results
+method: GET
+url: $api/indycar/events/:eventId/sessions/:sessionId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: eventId
+    value: $indycar_event_id
+  - name: sessionId
+    value: $indycar_session_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

@@ -1,0 +1,18 @@
+name: Get NASCAR Truck event sessions
+method: GET
+url: $api/nascar-truck/events/:eventId/sessions
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: eventId
+    value: $nascar_truck_event_id
+capture:
+  nascar_truck_session_id:
+    value: body[2].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

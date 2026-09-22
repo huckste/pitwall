@@ -1,0 +1,14 @@
+name: Get NASCAR Xfinity season drivers
+method: GET
+url: $api/nascar-xfinity/seasons/:seasonId/drivers
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: seasonId
+    value: $nascar_xfinity_season_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

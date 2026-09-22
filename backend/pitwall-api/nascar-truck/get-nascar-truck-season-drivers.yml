@@ -1,0 +1,14 @@
+name: Get NASCAR Truck season drivers
+method: GET
+url: $api/nascar-truck/seasons/:seasonId/drivers
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: seasonId
+    value: $nascar_truck_season_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

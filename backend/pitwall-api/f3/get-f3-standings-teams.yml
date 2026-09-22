@@ -1,0 +1,11 @@
+name: Get F3 team standings
+method: GET
+url: $api/formula3/standings/teams
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

@@ -1,0 +1,14 @@
+name: Get NASCAR Truck driver by id
+method: GET
+url: $api/nascar-truck/drivers/:driverId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: driverId
+    value: $nascar_truck_driver_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

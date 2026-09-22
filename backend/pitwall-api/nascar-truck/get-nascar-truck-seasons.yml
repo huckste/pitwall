@@ -1,0 +1,20 @@
+name: Get NASCAR Truck seasons
+method: GET
+url: $api/nascar-truck/seasons
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+params:
+  - name: page
+    value: '1'
+  - name: limit
+    value: '20'
+capture:
+  nascar_truck_season_id:
+    value: body.data[0].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

@@ -1,0 +1,14 @@
+name: Get F2 season by id
+method: GET
+url: $api/formula2/seasons/:seasonId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: seasonId
+    value: $f2_season_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

@@ -1,0 +1,14 @@
+name: Get F3 event by id
+method: GET
+url: $api/formula3/events/:eventId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: eventId
+    value: $f3_event_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

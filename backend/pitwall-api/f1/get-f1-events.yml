@@ -1,0 +1,20 @@
+name: Get F1 events
+method: GET
+url: $api/formula1/events
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+params:
+  - name: page
+    value: '1'
+  - name: limit
+    value: '50'
+capture:
+  f1_event_id:
+    value: body.data[12].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

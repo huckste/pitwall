@@ -1,0 +1,20 @@
+name: Get NASCAR Xfinity events
+method: GET
+url: $api/nascar-xfinity/events
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+params:
+  - name: page
+    value: '1'
+  - name: limit
+    value: '50'
+capture:
+  nascar_xfinity_event_id:
+    value: body.data[6].id
+    persist: environment
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

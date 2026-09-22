@@ -1,0 +1,11 @@
+name: Get NASCAR Truck owner standings
+method: GET
+url: $api/nascar-truck/standings/owners
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

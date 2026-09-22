@@ -1,0 +1,14 @@
+name: Get F1 driver by id
+method: GET
+url: $api/formula1/drivers/:driverId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: driverId
+    value: $f1_driver_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

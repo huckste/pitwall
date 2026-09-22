@@ -1,0 +1,14 @@
+name: Get NASCAR Truck event by id
+method: GET
+url: $api/nascar-truck/events/:eventId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: eventId
+    value: $nascar_truck_event_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

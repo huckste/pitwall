@@ -1,0 +1,14 @@
+name: Get WEC team by id
+method: GET
+url: $api/wec/teams/:teamId
+timeout: 30000
+followRedirects: true
+maxRedirects: 5
+path_params:
+  - name: teamId
+    value: $wec_team_id
+auth:
+  type: api_key
+  key: X-API-KEY
+  value: $API_KEY
+  placement: header

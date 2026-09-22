@@ -1,12 +1,12 @@
-name: Get F1 driver by id
+name: Get F3 season drivers
 method: GET
-url: $api/formula1/drivers/:driverId
+url: $api/formula3/seasons/:seasonId/drivers
 timeout: 30000
 followRedirects: true
 maxRedirects: 5
 path_params:
-  - name: driverId
-    value: aa101afe-9649-4ada-b6d7-521384dfb402
+  - name: seasonId
+    value: $f3_season_id
 auth:
   type: api_key
   key: X-API-KEY

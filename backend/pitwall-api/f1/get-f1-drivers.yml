@@ -9,6 +9,10 @@ params:
     value: '1'
   - name: limit
     value: '20'
+capture:
+  f1_driver_id:
+    value: body.data[0].id
+    persist: environment
 auth:
   type: api_key
   key: X-API-KEY
