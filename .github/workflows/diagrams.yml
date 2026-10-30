@@ -1,0 +1,70 @@
+# Regenerates docs/generated/ (package graph + DB schema) whenever the
+# backend changes, and commits the result back to main if anything changed.
+name: Diagrams
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "scripts/gen-diagrams.sh"
+      - ".tbls.yml"
+      - ".github/workflows/diagrams.yml"
+  workflow_dispatch: # adds a "Run workflow" button in the Actions tab
+permissions:
+  contents: write # needed to push the regenerated files
+
+concurrency:
+  group: diagrams
+  cancel-in-progress: true
+
+jobs:
+  diagrams:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pitwall
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/pitwall?sslmode=disable
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Load schema
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f backend/schema.sql
+
+      - name: Generate diagrams
+        run: ./scripts/gen-diagrams.sh
+
+      - name: Commit if changed
+        run: |
+          git add docs/generated
+          if git diff --cached --quiet; then
+            echo "Diagrams unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Regenerated diagrams"
+          git push

@@ -1,0 +1,8 @@
+# tbls: geenrates DB schema docs + ER diagram from a live Postgres.
+# The connection string is passed in by scripts/gen-diagrams.sh.
+
+docPath: docs/generated/schmea
+er:
+  format: svg
+format:
+  adjust: true

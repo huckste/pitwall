@@ -1,0 +1,3 @@
+# markdownlint config. Prose is soft-wrapped, so line length doesn't matter.
+config:
+  MD013: false
