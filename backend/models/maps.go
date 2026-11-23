@@ -7,23 +7,22 @@ import (
 )
 
 const (
-	Formula_1      Series = "formula1"
-	NASCAR         Series = "nascar"
-	NASCAR_Xfinity Series = "nascar-xfinity"
-	NASCAR_Trucks  Series = "nascar-truck"
-	IndyCar        Series = "indycar"
-	Moto_GP        Series = "moto-gp"
-	Moto_2         Series = "moto2"
-	Moto_3         Series = "moto3"
-	Formula_E      Series = "formula-e"
-	Formula_2      Series = "formula2"
-	Formula_3      Series = "formula3"
-	WEC            Series = "wec"
-	WRC            Series = "wrc"
+	Formula1      Series = "formula1"
+	NASCAR        Series = "nascar"
+	NASCARXfinity Series = "nascar-xfinity"
+	NASCARTrucks  Series = "nascar-truck"
+	IndyCar       Series = "indycar"
+	MotoGP        Series = "moto-gp"
+	Moto2         Series = "moto2"
+	Moto3         Series = "moto3"
+	FormulaE      Series = "formula-e"
+	Formula2      Series = "formula2"
+	Formula3      Series = "formula3"
+	WEC           Series = "wec"
+	WRC           Series = "wrc"
 )
 
 func MapOCBDriver(d ocb.Driver, series Series) Driver {
-
 	var nationality *string
 
 	if d.Country.Name != nil {
@@ -41,10 +40,33 @@ func MapOCBDriver(d ocb.Driver, series Series) Driver {
 	}
 }
 
+func MapSeasonDriver(d ocb.SeasonDriver, series Series) db.Driver {
+	var teamID *string
+	best := 0
+
+	// Driver can be an many teams within a season so this grabs the team ID that contains hightest round value
+	for _, t := range d.Teams {
+		for _, round := range t.ParticipationRounds {
+			if round > best {
+				best = round
+				teamID = &t.ID
+			}
+		}
+	}
+
+	return db.Driver{
+		TeamOCBID:   teamID,
+		OCBID:       d.ID,
+		Series:      string(series),
+		FirstName:   d.FirstName,
+		LastName:    d.LastName,
+		Number:      d.Number,
+		Nationality: d.Country.Name,
+	}
+}
+
 func MapOCBEvent(e ocb.Event, series Series) (Race, error) {
-
 	date, err := time.Parse("2006-01-02", e.DateStart)
-
 	if err != nil {
 		return Race{}, err
 	}
@@ -56,7 +78,6 @@ func MapOCBEvent(e ocb.Event, series Series) (Race, error) {
 		Date:   date,
 		Round:  0,
 	}, nil
-
 }
 
 func MapSeasonTeam(t ocb.SeasonTeam, series Series) db.Team {

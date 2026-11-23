@@ -2,22 +2,21 @@ package main
 
 import (
 	"context"
-	"github.com/joho/godotenv"
 	"log"
 	"pitwall/backend/db"
 	"pitwall/backend/models"
 	"pitwall/backend/ocb"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
 
 	ctx := context.Background()
 	pool, err := db.Connect(ctx)
-
 	if err != nil {
 		log.Fatal("failed to connect to db: ", err)
 	}
@@ -45,16 +44,28 @@ func main() {
 	}
 
 	teams, err := ocb.FetchSeasonTeams("formula1", season2025.ID)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, t := range teams {
-		if err := db.UpsertTeam(ctx, pool, models.MapSeasonTeam(t, models.Formula_1)); err != nil {
+		if err := db.UpsertTeam(ctx, pool, models.MapSeasonTeam(t, models.Formula1)); err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	log.Printf("upserted %d teams for formula1 2025\n", len(teams))
+
+	drivers, err := ocb.FetchSeasonDrivers("formula1", season2025.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, d := range drivers {
+		if err := db.UpsertDriver(ctx, pool, models.MapSeasonDriver(d, models.Formula1)); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	log.Printf("upserted %d drivers for formula1 2025\n", len(drivers))
 }

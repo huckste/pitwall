@@ -10,7 +10,7 @@ type Location struct {
 type Season struct {
 	ID         string `json:"id"`
 	Year       int    `json:"year"`
-	SportId    string `json:"sportId"`
+	SportID    string `json:"sportId"`
 	Status     string `json:"status"`
 	RoundCount *int   `json:"roundCount"`
 }
@@ -49,6 +49,20 @@ type Driver struct {
 	Number    *int    `json:"number"`
 	TLA       *string `json:"tla"`
 	Country   Country `json:"country"`
+}
+
+type SeasonDriver struct {
+	ID        string             `json:"id"`
+	FirstName string             `json:"firstName"`
+	LastName  string             `json:"lastName"`
+	Number    *int               `json:"number"`
+	Country   Country            `json:"country"`
+	Teams     []SeasonDriverTeam `json:"teams"`
+}
+
+type SeasonDriverTeam struct {
+	ID                  string `json:"id"`
+	ParticipationRounds []int  `json:"participationRounds"`
 }
 
 type SeasonTeam struct {
