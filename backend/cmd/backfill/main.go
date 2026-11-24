@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"pitwall/backend/db"
 	"pitwall/backend/models"
@@ -12,6 +13,13 @@ import (
 )
 
 func main() {
+	seriesFlag := flag.String("series", "formula1", "OCB series slug")
+	yearFlag := flag.Int("year", 2025, "season year")
+	flag.Parse()
+
+	series := models.Series(*seriesFlag)
+	year := *yearFlag
+
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
@@ -26,32 +34,59 @@ func main() {
 	defer pool.Close()
 	log.Printf("backfill connected to db, ready to go")
 
-	seasons, err := ocb.FetchSeasons("formula1")
+	// --- seasons ---
+	seasons, err := ocb.FetchSeasons(string(series))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, s := range seasons {
-		if err := db.UpsertSeason(ctx, pool, models.MapSeason(s, models.Formula1)); err != nil {
+		if err := db.UpsertSeason(ctx, pool, models.MapSeason(s, series)); err != nil {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("upserted %d seasons for formula1\n", len(seasons))
+	log.Printf("upserted %d seasons for %s\n", len(seasons), series)
 
-	var season2025 *ocb.Season
-
+	var season *ocb.Season
 	for _, s := range seasons {
-		if s.Year == 2025 {
-			season2025 = &s
+		if s.Year == year {
+			season = &s
 			break
 		}
 	}
 
-	if season2025 == nil {
-		log.Fatal("no 2025 season found for formula1")
+	if season == nil {
+		log.Fatalf("no %d season found for %s", year, series)
 	}
 
-	events, err := ocb.FetchSeasonEvents("formula1", season2025.Year)
+	// --- teams ---
+	teams, err := ocb.FetchSeasonTeams(string(series), season.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, t := range teams {
+		if err := db.UpsertTeam(ctx, pool, models.MapSeasonTeam(t, series)); err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("upserted %d teams for %s %d\n", len(teams), series, year)
+
+	// --- drivers ---
+	drivers, err := ocb.FetchSeasonDrivers(string(series), season.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, d := range drivers {
+		if err := db.UpsertDriver(ctx, pool, models.MapSeasonDriver(d, series)); err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("upserted %d drivers for %s %d\n", len(drivers), series, year)
+
+	// --- events ---
+	events, err := ocb.FetchSeasonEvents(string(series), season.Year)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +97,7 @@ func main() {
 	for _, e := range events {
 		log.Printf("fetching results for %s (%d sessions)...", e.Name, len(e.Schedule))
 
-		ev, err := models.MapEvent(e, models.Formula1, season2025.ID)
+		ev, err := models.MapEvent(e, series, season.ID)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,8 +106,9 @@ func main() {
 			log.Fatal(err)
 		}
 
+		// --- sessions ---
 		for _, sess := range e.Schedule {
-			session, err := models.MapSession(sess, models.Formula1, e.ID)
+			session, err := models.MapSession(sess, series, e.ID)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -88,19 +124,20 @@ func main() {
 
 			time.Sleep(1100 * time.Millisecond)
 
-			results, err := ocb.FetchSessionResults("formula1", e.ID, sess.ID)
+			// --- results ---
+			results, err := ocb.FetchSessionResults(string(series), e.ID, sess.ID)
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			for _, r := range results {
 
-				if err := db.InsertMissingDriver(ctx, pool, models.MapResultDriver(r, models.Formula1)); err != nil {
+				if err := db.InsertMissingDriver(ctx, pool, models.MapResultDriver(r, series)); err != nil {
 					log.Printf("skipping driver %s: %v", r.Driver.ID, err)
 					continue
 				}
 
-				res, err := models.MapResult(r, models.Formula1, sess.ID)
+				res, err := models.MapResult(r, series, sess.ID)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -114,31 +151,7 @@ func main() {
 		}
 	}
 
-	log.Printf("upserted %d sessions for formula1 2025\n", sessionCount)
-	log.Printf("upserted %d results for formula1 2025\n", resultCount)
-	log.Printf("upserted %d events for formula1 2025\n", len(events))
-
-	teams, err := ocb.FetchSeasonTeams("formula1", season2025.ID)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, t := range teams {
-		if err := db.UpsertTeam(ctx, pool, models.MapSeasonTeam(t, models.Formula1)); err != nil {
-			log.Fatal(err)
-		}
-	}
-	log.Printf("upserted %d teams for formula1 2025\n", len(teams))
-
-	drivers, err := ocb.FetchSeasonDrivers("formula1", season2025.ID)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, d := range drivers {
-		if err := db.UpsertDriver(ctx, pool, models.MapSeasonDriver(d, models.Formula1)); err != nil {
-			log.Fatal(err)
-		}
-	}
-	log.Printf("upserted %d drivers for formula1 2025\n", len(drivers))
+	log.Printf("upserted %d sessions for %s %d\n", sessionCount, series, year)
+	log.Printf("upserted %d results for %s %d\n", resultCount, series, year)
+	log.Printf("upserted %d events for %s %d\n", len(events), series, year)
 }

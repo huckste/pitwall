@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"pitwall/backend/models"
 	"pitwall/backend/ocb"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
@@ -29,10 +29,8 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func driversHandler(w http.ResponseWriter, r *http.Request) {
-
 	seriesParam := models.Series(r.URL.Query().Get("series"))
 	ocbDrivers, err := ocb.FetchDrivers(string(seriesParam))
-
 	if err != nil {
 		http.Error(w, "failed to fetch drivers", http.StatusBadGateway)
 		return
@@ -49,10 +47,8 @@ func driversHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func latestRaceHandler(w http.ResponseWriter, r *http.Request) {
-
 	seriesParam := models.Series(r.URL.Query().Get("series"))
 	events, err := ocb.FetchEvents(string(seriesParam))
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
@@ -66,7 +62,6 @@ func latestRaceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	race, err := models.MapOCBEvent(*event, seriesParam)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
