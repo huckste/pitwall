@@ -1,0 +1,66 @@
+package db
+
+import (
+	"context"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type LatestResult struct {
+	DriverID  int        `json:"driverId"`
+	FirstName string     `json:"firstName"`
+	LastName  string     `json:"lastName"`
+	Series    string     `json:"series"`
+	Team      *string    `json:"team"`
+	Event     string     `json:"event"`
+	StartTime *time.Time `json:"startTime"`
+	Position  *string    `json:"position"`
+	Points    *float64   `json:"points"`
+	Status    string     `json:"status"`
+}
+
+func LatestRaceResult(ctx context.Context, pool *pgxpool.Pool) ([]LatestResult, error) {
+	rows, err := pool.Query(ctx, `
+		select distinct on (d.id)
+			d.id,
+			d.first_name,
+			d.last_name,
+			d.series,
+			t.name as team, 
+			e.name as event,
+			s.start_time,
+			r.position,
+			r.points,
+			r.status
+		from drivers d
+		join results r 
+			on r.driver_id = d.id
+		join sessions s 
+			on s.id = r.session_id
+		join events e 
+			on e.id = s.event_id
+		left join teams t 
+			on t.id = r.team_id
+		where s.type = 'race'
+		order by 
+			d.id, 
+			s.start_time desc
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []LatestResult
+	for rows.Next() {
+		var lr LatestResult
+		if err := rows.Scan(&lr.DriverID, &lr.FirstName, &lr.LastName, &lr.Series,
+			&lr.Team, &lr.Event, &lr.StartTime, &lr.Position, &lr.Points, &lr.Status); err != nil {
+			return nil, err
+		}
+		out = append(out, lr)
+	}
+
+	return out, rows.Err()
+}
