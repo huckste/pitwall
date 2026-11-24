@@ -16,19 +16,26 @@ func main() {
 	}
 
 	ctx := context.Background()
+
 	pool, err := db.Connect(ctx)
 	if err != nil {
 		log.Fatal("failed to connect to db: ", err)
 	}
 
 	defer pool.Close()
-
 	log.Printf("backfill connected to db, ready to go")
 
 	seasons, err := ocb.FetchSeasons("formula1")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	for _, s := range seasons {
+		if err := db.UpsertSeason(ctx, pool, models.MapSeason(s, models.Formula1)); err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("upserted %d seasons for formula1\n", len(seasons))
 
 	var season2025 *ocb.Season
 
@@ -43,6 +50,23 @@ func main() {
 		log.Fatal("no 2025 season found for formula1")
 	}
 
+	events, err := ocb.FetchSeasonEvents("formula1", season2025.Year)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, e := range events {
+		ev, err := models.MapEvent(e, models.Formula1, season2025.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := db.UpsertEvent(ctx, pool, ev); err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("upserted %d events for formula1 2025\n", len(events))
+
 	teams, err := ocb.FetchSeasonTeams("formula1", season2025.ID)
 	if err != nil {
 		log.Fatal(err)
@@ -53,7 +77,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-
 	log.Printf("upserted %d teams for formula1 2025\n", len(teams))
 
 	drivers, err := ocb.FetchSeasonDrivers("formula1", season2025.ID)
@@ -66,6 +89,5 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-
 	log.Printf("upserted %d drivers for formula1 2025\n", len(drivers))
 }

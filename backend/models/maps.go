@@ -99,3 +99,35 @@ func MapSeasonTeam(t ocb.SeasonTeam, series Series) db.Team {
 		FullName:  fullName,
 	}
 }
+
+func MapSeason(s ocb.Season, series Series) db.Season {
+	return db.Season{
+		OCBID:      s.ID,
+		Series:     string(series),
+		Year:       s.Year,
+		RoundCount: s.RoundCount,
+		Status:     s.Status,
+	}
+}
+
+func MapEvent(e ocb.Event, series Series, seasonOCBID string) (db.Event, error) {
+	start, err := time.Parse("2006-01-02", e.DateStart)
+	if err != nil {
+		return db.Event{}, err
+	}
+
+	end, err := time.Parse("2006-01-02", e.DateEnd)
+	if err != nil {
+		return db.Event{}, err
+	}
+
+	return db.Event{
+		OCBID:       e.ID,
+		Series:      string(series),
+		Name:        e.Name,
+		Status:      e.Status,
+		DateStart:   start,
+		DateEnd:     end,
+		SeasonOCBID: seasonOCBID,
+	}, nil
+}

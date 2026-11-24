@@ -50,8 +50,19 @@ func FetchDrivers(sport string) ([]Driver, error) {
 	return parsed.Data, nil
 }
 
-// Used to get which driver is on which team currently for the given season
+func FetchSeasonEvents(sport string, year int) ([]Event, error) {
+	url := fmt.Sprintf("%s/%s/events?year=%d&limit=50", baseURL, sport, year)
 
+	var parsed eventsResponse
+
+	if err := get(url, &parsed); err != nil {
+		return nil, err
+	}
+
+	return parsed.Data, nil
+}
+
+// FetchSeasonDrivers is used to get which driver is on which team currently for the given season
 func FetchSeasonDrivers(sport, seasonID string) ([]SeasonDriver, error) {
 	url := fmt.Sprintf("%s/%s/seasons/%s/drivers", baseURL, sport, seasonID)
 	var drivers []SeasonDriver

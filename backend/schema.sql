@@ -39,6 +39,7 @@ CREATE TABLE events (
   date_start DATE,
   date_end DATE,
   status TEXT,
+  season_id INT REFERENCES seasons(id),
   UNIQUE (ocb_id, series)
 );
 
