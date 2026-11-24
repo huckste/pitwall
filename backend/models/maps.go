@@ -3,6 +3,7 @@ package models
 import (
 	"pitwall/backend/db"
 	"pitwall/backend/ocb"
+	"strconv"
 	"time"
 )
 
@@ -162,4 +163,39 @@ func MapSession(s ocb.ScheduleSession, series Series, eventOCBID string) (db.Ses
 		StartTime:  start,
 		EndTime:    end,
 	}, nil
+}
+
+func MapResult(r ocb.SessionResult, series Series, sessionOCBID string) (db.Result, error) {
+	var points *float64
+
+	if r.Points != nil {
+		p, err := strconv.ParseFloat(*r.Points, 64)
+		if err != nil {
+			return db.Result{}, err
+		}
+		points = &p
+	}
+
+	return db.Result{
+		SessionOCBID: sessionOCBID,
+		DriverOCBID:  r.Driver.ID,
+		TeamOCBID:    r.Team.ID,
+		Series:       string(series),
+		Position:     r.Position,
+		CarNumber:    r.CarNumber,
+		Laps:         r.Laps,
+		Status:       r.Status,
+		Points:       points,
+	}, nil
+}
+
+func MapResultDriver(r ocb.SessionResult, series Series) db.Driver {
+	return db.Driver{
+		OCBID:     r.Driver.ID,
+		Series:    string(series),
+		FirstName: r.Driver.FirstName,
+		LastName:  r.Driver.LastName,
+		Number:    r.Driver.Number,
+		TeamOCBID: &r.Team.ID,
+	}
 }

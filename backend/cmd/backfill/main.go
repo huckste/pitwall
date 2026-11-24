@@ -6,6 +6,7 @@ import (
 	"pitwall/backend/db"
 	"pitwall/backend/models"
 	"pitwall/backend/ocb"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -56,8 +57,11 @@ func main() {
 	}
 
 	sessionCount := 0
+	resultCount := 0
 
 	for _, e := range events {
+		log.Printf("fetching results for %s (%d sessions)...", e.Name, len(e.Schedule))
+
 		ev, err := models.MapEvent(e, models.Formula1, season2025.ID)
 		if err != nil {
 			log.Fatal(err)
@@ -77,10 +81,41 @@ func main() {
 				log.Fatal(err)
 			}
 			sessionCount++
+
+			if sess.Status != "completed" {
+				continue
+			}
+
+			time.Sleep(1100 * time.Millisecond)
+
+			results, err := ocb.FetchSessionResults("formula1", e.ID, sess.ID)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for _, r := range results {
+
+				if err := db.InsertMissingDriver(ctx, pool, models.MapResultDriver(r, models.Formula1)); err != nil {
+					log.Printf("skipping driver %s: %v", r.Driver.ID, err)
+					continue
+				}
+
+				res, err := models.MapResult(r, models.Formula1, sess.ID)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if err := db.UpsertResult(ctx, pool, res); err != nil {
+					log.Printf("skipping result (session %s, driver %s): %v", sess.ID, r.Driver.ID, err)
+					continue
+				}
+				resultCount++
+			}
 		}
 	}
 
 	log.Printf("upserted %d sessions for formula1 2025\n", sessionCount)
+	log.Printf("upserted %d results for formula1 2025\n", resultCount)
 	log.Printf("upserted %d events for formula1 2025\n", len(events))
 
 	teams, err := ocb.FetchSeasonTeams("formula1", season2025.ID)

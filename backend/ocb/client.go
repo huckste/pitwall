@@ -50,6 +50,17 @@ func FetchDrivers(sport string) ([]Driver, error) {
 	return parsed.Data, nil
 }
 
+func FetchSessionResults(sport, eventID, sessionID string) ([]SessionResult, error) {
+	url := fmt.Sprintf("%s/%s/events/%s/sessions/%s", baseURL, sport, eventID, sessionID)
+	var parsed SessionDetail
+
+	if err := get(url, &parsed); err != nil {
+		return nil, err
+	}
+
+	return parsed.Results, nil
+}
+
 func FetchSeasonEvents(sport string, year int) ([]Event, error) {
 	url := fmt.Sprintf("%s/%s/events?year=%d&limit=50", baseURL, sport, year)
 

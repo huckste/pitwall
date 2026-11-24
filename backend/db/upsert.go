@@ -54,6 +54,18 @@ type Session struct {
 	Series     string
 }
 
+type Result struct {
+	SessionOCBID string
+	DriverOCBID  string
+	TeamOCBID    string
+	Series       string
+	Position     *string
+	CarNumber    *string
+	Points       *float64
+	Laps         *int
+	Status       string
+}
+
 func UpsertTeam(ctx context.Context, pool *pgxpool.Pool, t Team) error {
 	_, err := pool.Exec(ctx, `
 		INSERT INTO teams (ocb_id, series, name, short_name, full_name)
@@ -125,6 +137,38 @@ func UpsertSession(ctx context.Context, pool *pgxpool.Pool, s Session) error {
 			type = EXCLUDED.type,
 			status = EXCLUDED.status
 		`, s.OCBID, s.Type, s.Name, s.Status, s.StartTime, s.EndTime, s.EventOCBID, s.Series)
+
+	return err
+}
+
+func UpsertResult(ctx context.Context, pool *pgxpool.Pool, r Result) error {
+	_, err := pool.Exec(ctx, `
+		INSERT INTO results (session_id, driver_id, team_id, car_number, position, points, status, laps)
+		VALUES (
+			(SELECT id FROM sessions WHERE ocb_id = $1),
+			(SELECT id FROM drivers WHERE ocb_id = $2 AND series = $3),
+			(SELECT id FROM teams WHERE ocb_id = $4 AND series = $3),
+			$5, $6, $7, $8, $9
+		)
+		ON CONFLICT (session_id, driver_id) DO UPDATE 
+		SET team_id = EXCLUDED.team_id,
+			car_number = EXCLUDED.car_number,
+			position = EXCLUDED.position,
+			points = EXCLUDED.points,
+			status = EXCLUDED.status,
+			laps = EXCLUDED.laps
+		`, r.SessionOCBID, r.DriverOCBID, r.Series, r.TeamOCBID, r.CarNumber, r.Position, r.Points, r.Status, r.Laps)
+
+	return err
+}
+
+func InsertMissingDriver(ctx context.Context, pool *pgxpool.Pool, d Driver) error {
+	_, err := pool.Exec(ctx, `
+		INSERT INTO drivers (ocb_id, series, first_name, last_name, number, nationality, team_id)
+		VALUES ($1, $2, $3, $4, $5, $6, 
+			(SELECT id FROM teams WHERE ocb_id = $7 AND series = $2))
+		ON CONFLICT (ocb_id, series) DO NOTHING
+		`, d.OCBID, d.Series, d.FirstName, d.LastName, d.Number, d.Nationality, d.TeamOCBID)
 
 	return err
 }

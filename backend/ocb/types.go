@@ -83,3 +83,28 @@ type eventsResponse struct {
 type seasonsResponse struct {
 	Data []Season `json:"data"`
 }
+
+type ResultDriver struct {
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Number    *int   `json:"number"`
+}
+
+type ResultRef struct {
+	ID string `json:"id"`
+}
+
+type SessionResult struct {
+	Position  *string      `json:"position"`
+	Points    *string      `json:"points"`
+	Laps      *int         `json:"laps"`
+	Status    string       `json:"status"`
+	CarNumber *string      `json:"carNumber"`
+	Driver    ResultDriver `json:"driver"`
+	Team      ResultRef    `json:"team"`
+}
+
+type SessionDetail struct {
+	Results []SessionResult `json:"results"`
+}
