@@ -172,3 +172,10 @@ func InsertMissingDriver(ctx context.Context, pool *pgxpool.Pool, d Driver) erro
 
 	return err
 }
+
+func MarkResultsFetched(ctx context.Context, pool *pgxpool.Pool, sessionOCBID string) error {
+	_, err := pool.Exec(ctx, `
+		UPDATE sessions SET results_fetched_at = now() WHERE ocb_id = $1
+		`, sessionOCBID)
+	return err
+}

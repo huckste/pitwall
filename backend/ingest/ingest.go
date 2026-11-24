@@ -101,7 +101,7 @@ func SyncSeason(ctx context.Context, pool *pgxpool.Pool, series models.Series, y
 				continue
 			}
 
-			has, err := db.SessionHasResults(ctx, pool, sess.ID)
+			has, err := db.SessionResultsFetched(ctx, pool, sess.ID)
 			if err != nil {
 				return err
 			}
@@ -135,6 +135,10 @@ func SyncSeason(ctx context.Context, pool *pgxpool.Pool, series models.Series, y
 					continue
 				}
 				resultCount++
+			}
+
+			if err := db.MarkResultsFetched(ctx, pool, sess.ID); err != nil {
+				return err
 			}
 		}
 	}

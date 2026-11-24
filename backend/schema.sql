@@ -51,7 +51,8 @@ CREATE TABLE sessions (
   name TEXT,
   status TEXT,
   start_time TIMESTAMPTZ,
-  end_time TIMESTAMPTZ
+  end_time TIMESTAMPTZ,
+  results_fetched_at TIMESTAMPTZ,
 );
 
 CREATE TABLE results (

@@ -31,14 +31,18 @@ func main() {
 
 	log.Println("pitwall backend listening on :8080")
 
+	tracked := []models.Series{models.Formula1, models.Formula2, models.Formula3, models.IndyCar, models.FormulaE}
+
 	go func() {
 		ticker := time.NewTicker(6 * time.Hour)
 		defer ticker.Stop()
 
 		for {
-			log.Println("poller: syncing current season")
-			if err := ingest.SyncSeason(ctx, pool, models.Formula1, time.Now().Year()); err != nil {
-				log.Printf("poller: sync failed: %v", err)
+			for _, s := range tracked {
+				log.Printf("poller: syncing %s", s)
+				if err := ingest.SyncSeason(ctx, pool, s, time.Now().Year()); err != nil {
+					log.Printf("poller: %s sync failed: %v", s, err)
+				}
 			}
 
 			<-ticker.C

@@ -65,14 +65,10 @@ func LatestRaceResult(ctx context.Context, pool *pgxpool.Pool) ([]LatestResult, 
 	return out, rows.Err()
 }
 
-func SessionHasResults(ctx context.Context, pool *pgxpool.Pool, sessionOCBID string) (bool, error) {
-	var exists bool
+func SessionResultsFetched(ctx context.Context, pool *pgxpool.Pool, sessionOCBID string) (bool, error) {
+	var fetched bool
 	err := pool.QueryRow(ctx, `
-		SELECT EXISTS (
-			SELECT 1 FROM results r
-			JOIN sessions s ON s.id = r.session_id
-			WHERE s.ocb_id = $1
-		)
-		`, sessionOCBID).Scan(&exists)
-	return exists, err
+		SELECT results_fetched_at IS NOT NULL FROM sessions WHERE ocb_id = $1
+	`, sessionOCBID).Scan(&fetched)
+	return fetched, err
 }
