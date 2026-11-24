@@ -1,0 +1,46 @@
+@* One glanceable row: result, who, where. Nothing more. *@
+<button type="button" class="row @(Finished ? "" : "out")" @onclick="() => OnSelect.InvokeAsync(Result)">
+  <span class="pos @Medal">@PositionText</span>
+
+  <div class="who">
+    <span class="name">
+      <span class="first">@Result.FirstName</span>
+      <span class="last">@Result.LastName</span>
+      @if (!Finished)
+      {
+        <span class="tag">@Result.Outcome.ToUpper()</span>
+      }
+    </span>
+    <span class="meta">
+      @if (ShowSeries)
+      {
+        <span class="chip" style="--accent: @SeriesInfo.Accent(Result.Series)">@SeriesInfo.Short(Result.Series)</span>
+      }
+      @Result.Team
+    </span>
+  </div>
+
+  <div class="where">
+    <span class="event">@Result.Event</span>
+    <span class="date">@Result.StartTime?.ToLocalTime().ToString("MMM d, yyyy")</span>
+  </div>
+</button>
+
+@code {
+  [Parameter, EditorRequired] public LatestResult Result { get; set; } = default!;
+  [Parameter] public bool ShowSeries { get; set; }
+  [Parameter] public EventCallback<LatestResult> OnSelect { get; set; }
+
+  private bool Finished => Result.Outcome == "finished";
+
+  private string PositionText =>
+    int.TryParse(Result.Position, out var p) ? $"P{p}" : Result.Position ?? "–";
+
+  private string Medal => !Finished ? "" : Result.Position switch
+  {
+    "1" => "p1",
+    "2" => "p2",
+    "3" => "p3",
+    _ => ""
+  };
+}

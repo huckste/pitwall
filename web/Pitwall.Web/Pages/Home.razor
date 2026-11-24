@@ -1,57 +1,91 @@
 ﻿@page "/"
-@using Pitwall.Shared
 @inject HttpClient Http
+@inject FollowStore Follows
 
 <PageTitle>Pitwall</PageTitle>
 
-<h1>Latest results</h1>
-
 @if (error is not null)
 {
-  <p class="text-danger">Couldn't load results: @error</p>
+  <div class="state state-error">
+    <strong>Couldn't load results.</strong>
+    <span>Is the Go API running on :8080? (@error)</span>
+  </div>
 }
-else if (results is null)
+else if (all is null)
 {
-  <p>Loading…</p>
+  <div class="state">Loading…</div>
+}
+else if (editing || Watched.Count == 0)
+{
+  <FollowPicker Drivers="all"
+                Followed="Follows.DriverIds"
+                OnToggle="ToggleFollow"
+                OnDone="() => editing = false" />
 }
 else
 {
-  @foreach (var series in results.GroupBy(r => r.Series))
-  {
-    <h2>@series.Key</h2>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Driver</th>
-          <th>Team</th>
-          <th>Last race</th>
-          <th>Result</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach (var r in series.OrderByDescending(r => r.StartTime).ThenBy(r => SortKey(r.Position)))
+  <div class="toolbar">
+    <h1>Watching <span class="count">@Watched.Count</span></h1>
+
+    <div class="controls">
+      <div class="segmented" role="group" aria-label="View">
+        <button class="@(Follows.View == "consolidated" ? "active" : "")"
+                aria-pressed="@(Follows.View == "consolidated")"
+                @onclick='() => Follows.SetViewAsync("consolidated")'>Consolidated</button>
+        <button class="@(Follows.View == "series" ? "active" : "")"
+                aria-pressed="@(Follows.View == "series")"
+                @onclick='() => Follows.SetViewAsync("series")'>By series</button>
+      </div>
+      <button class="edit" @onclick="() => editing = true">Edit</button>
+    </div>
+  </div>
+
+  <div class="list">
+    @if (Follows.View == "series")
+    {
+      @foreach (var group in BySeries)
+      {
+        <div class="group-head" style="--accent: @SeriesInfo.Accent(group.Key)">
+          @SeriesInfo.Name(group.Key)
+        </div>
+        @foreach (var r in group)
         {
-          <tr>
-            <td>@r.FirstName @r.LastName</td>
-            <td>@r.Team</td>
-            <td>@r.Event</td>
-            <td>@ResultText(r)</td>
-          </tr>
+          <DriverRow Result="r" OnSelect="Open" />
         }
-      </tbody>
-    </table>
-  }
+      }
+    }
+    else
+    {
+      @foreach (var r in Consolidated)
+      {
+        <DriverRow Result="r" ShowSeries="true" OnSelect="Open" />
+      }
+    }
+  </div>
+}
+
+@if (selected is not null)
+{
+  <PlayerCard @key="selected.DriverId"
+              DriverId="selected.DriverId"
+              Series="@selected.Series"
+              OnClose="() => selected = null" />
 }
 
 @code {
-  private List<LatestResult>? results;
+  private List<LatestResult>? all;
   private string? error;
+  private bool editing;
+  private LatestResult? selected;
+
+  private void Open(LatestResult r) => selected = r;
 
   protected override async Task OnInitializedAsync()
   {
+    await Follows.LoadAsync();
     try
     {
-      results = await Http.GetFromJsonAsync<List<LatestResult>>("latest-results");
+      all = await Http.GetFromJsonAsync<List<LatestResult>>("latest-results") ?? new();
     }
     catch (Exception ex)
     {
@@ -59,13 +93,21 @@ else
     }
   }
 
-  private static int SortKey(string? position) =>
-      int.TryParse(position, out var p) ? p : int.MaxValue;
+  private List<LatestResult> Watched =>
+    all?.Where(r => Follows.IsFollowed(r.DriverId)).ToList() ?? new();
 
-  // Always show the finishing position; tag it when the driver didn't finish.
-  private static string ResultText(LatestResult r)
-  {
-    var pos = int.TryParse(r.Position, out var p) ? $"P{p}" : r.Position ?? "–";
-    return r.Outcome == "finished" ? pos : $"{pos} · {r.Outcome.ToUpper()}";
-  }
+  // Most recent race first, then finishing position.
+  private IEnumerable<LatestResult> Consolidated =>
+    Watched.OrderByDescending(r => r.StartTime).ThenBy(r => SortKey(r.Position));
+
+  // Series with the most recent race first; same ordering inside each series.
+  private IEnumerable<IGrouping<string, LatestResult>> BySeries =>
+    Consolidated
+      .GroupBy(r => r.Series)
+      .OrderByDescending(g => g.Max(r => r.StartTime));
+
+  private Task ToggleFollow(int driverId) => Follows.ToggleAsync(driverId);
+
+  private static int SortKey(string? position) =>
+    int.TryParse(position, out var p) ? p : int.MaxValue;
 }

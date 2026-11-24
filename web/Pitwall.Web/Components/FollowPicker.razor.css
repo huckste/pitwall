@@ -1,0 +1,143 @@
+.picker {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+}
+
+.picker-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.picker-head p {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.done {
+    flex-shrink: 0;
+    font: inherit;
+    font-weight: 650;
+    font-size: 0.9rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--text);
+    color: var(--surface);
+    cursor: pointer;
+}
+
+.search {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 1.25rem;
+}
+
+.search:focus {
+    outline: 2px solid var(--accent-2);
+    outline-offset: -1px;
+}
+
+.group + .group {
+    margin-top: 1.25rem;
+}
+
+h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 0.4rem;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-align: left;
+    font: inherit;
+    padding: 0.5rem 0.65rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.option:hover {
+    background: var(--surface-2);
+}
+
+.option.on {
+    border-color: var(--text);
+    background: var(--surface-2);
+}
+
+.check {
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    background: var(--surface-2);
+    color: var(--text-muted);
+}
+
+.option.on .check {
+    background: var(--text);
+    color: var(--surface);
+}
+
+.opt-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.opt-name {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.opt-team {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}

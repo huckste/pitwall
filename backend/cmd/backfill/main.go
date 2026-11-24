@@ -36,4 +36,8 @@ func main() {
 	if err := ingest.SyncSeason(ctx, pool, series, year); err != nil {
 		log.Fatal(err)
 	}
+
+	if err := ingest.SyncPhotos(ctx, pool); err != nil {
+		log.Fatal(err)
+	}
 }

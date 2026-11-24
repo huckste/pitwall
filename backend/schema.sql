@@ -6,6 +6,7 @@ CREATE TABLE  teams (
   name TEXT,
   short_name TEXT,
   full_name TEXT,
+  color TEXT,
   UNIQUE (ocb_id, series)
 );
 
@@ -18,6 +19,9 @@ CREATE TABLE drivers (
   number INT,
   nationality TEXT,
   team_id INT REFERENCES teams(id),
+  photo_url TEXT,
+  photo_page TEXT,
+  photo_checked_at TIMESTAMPTZ,
   UNIQUE (ocb_id, series)
 );
 

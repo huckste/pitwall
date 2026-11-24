@@ -13,6 +13,7 @@ type Team struct {
 	Name      string
 	ShortName string
 	FullName  string
+	Color     *string
 }
 
 type Driver struct {
@@ -68,13 +69,14 @@ type Result struct {
 
 func UpsertTeam(ctx context.Context, pool *pgxpool.Pool, t Team) error {
 	_, err := pool.Exec(ctx, `
-		INSERT INTO teams (ocb_id, series, name, short_name, full_name)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO teams (ocb_id, series, name, short_name, full_name, color)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (ocb_id, series) DO UPDATE
-		SET name = EXCLUDED.name, 
-			short_name = EXCLUDED.short_name, 
-			full_name = EXCLUDED.full_name
-	`, t.OCBID, t.Series, t.Name, t.ShortName, t.FullName)
+		SET name = EXCLUDED.name,
+			short_name = EXCLUDED.short_name,
+			full_name = EXCLUDED.full_name,
+			color = EXCLUDED.color
+	`, t.OCBID, t.Series, t.Name, t.ShortName, t.FullName, t.Color)
 
 	return err
 }
@@ -177,5 +179,46 @@ func MarkResultsFetched(ctx context.Context, pool *pgxpool.Pool, sessionOCBID st
 	_, err := pool.Exec(ctx, `
 		UPDATE sessions SET results_fetched_at = now() WHERE ocb_id = $1
 		`, sessionOCBID)
+	return err
+}
+
+// DriverToCheck is a driver whose photo hasn't been looked up yet.
+type DriverToCheck struct {
+	ID        int
+	FirstName string
+	LastName  string
+}
+
+// DriversNeedingPhoto returns drivers never checked for a photo. Checked drivers
+// are skipped even when nothing was found, so we don't ask Wikipedia again every poll.
+func DriversNeedingPhoto(ctx context.Context, pool *pgxpool.Pool) ([]DriverToCheck, error) {
+	rows, err := pool.Query(ctx, `
+		SELECT id, first_name, last_name FROM drivers
+		WHERE photo_checked_at IS NULL
+		ORDER BY id
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []DriverToCheck
+	for rows.Next() {
+		var d DriverToCheck
+		if err := rows.Scan(&d.ID, &d.FirstName, &d.LastName); err != nil {
+			return nil, err
+		}
+		out = append(out, d)
+	}
+	return out, rows.Err()
+}
+
+// SetDriverPhoto records the lookup result; url and page are nil when nothing was found.
+func SetDriverPhoto(ctx context.Context, pool *pgxpool.Pool, driverID int, url, page *string) error {
+	_, err := pool.Exec(ctx, `
+		UPDATE drivers
+		SET photo_url = $2, photo_page = $3, photo_checked_at = now()
+		WHERE id = $1
+	`, driverID, url, page)
 	return err
 }

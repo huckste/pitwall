@@ -7,6 +7,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// outcomeSQL turns each series' own status words into one shared vocabulary:
+// finished, dnf, dns, dsq. Status words differ per series (F1 "OK",
+// F2/F3/FE "", IndyCar "Running"), so this is the one place that knows them.
+// Expects the results table to be aliased as r.
+const outcomeSQL = `case
+	when r.status in ('', 'OK', 'Running') then 'finished'
+	when r.status = 'DNS' then 'dns'
+	when r.status = 'DSQ' then 'dsq'
+	else 'dnf'
+end`
+
 type LatestResult struct {
 	DriverID  int        `json:"driverId"`
 	FirstName string     `json:"firstName"`
@@ -34,14 +45,7 @@ func LatestRaceResult(ctx context.Context, pool *pgxpool.Pool) ([]LatestResult, 
 			r.position,
 			r.points,
 			r.status,
-			-- status words differ per series (F1 "OK", F2/F3/FE "", IndyCar "Running"),
-			-- so normalize them here once for every frontend
-			case
-				when r.status in ('', 'OK', 'Running') then 'finished'
-				when r.status = 'DNS' then 'dns'
-				when r.status = 'DSQ' then 'dsq'
-				else 'dnf'
-			end as outcome
+			`+outcomeSQL+` as outcome
 		from drivers d
 		join results r 
 			on r.driver_id = d.id

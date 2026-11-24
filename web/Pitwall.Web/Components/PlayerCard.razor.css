@@ -1,0 +1,698 @@
+/* =========================================================
+   Player card: dark chrome/prizm-style sports card.
+   Square corners, thin frame, dark carbon background with
+   prism shards and speed streaks. --team (driver's team color)
+   is used as an accent only. m0–m3 vary the shard layout per
+   driver. Sizes use cqw (1% of card width).
+   ========================================================= */
+
+.overlay {
+    --ink: #111117;
+    --paper: #f1efe9;
+    --paper-2: #e2dfd6;
+    --muted: #66636e;
+    --gold-1: #fff1b8;
+    --gold-2: #e0ad2f;
+    --gold-3: #9c6d0c;
+    --chrome-1: #ffffff;
+    --chrome-2: #aeb4bd;
+    --chrome-3: #5d636d;
+    --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    /* no backdrop-filter: a blurred backdrop flickers in Chromium while the card is being transformed */
+    background: radial-gradient(ellipse at center, rgba(12, 12, 20, 0.82) 0%, rgba(4, 4, 8, 0.96) 75%);
+    animation: fade-in 0.18s ease-out both;
+    outline: none;
+}
+
+.close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.close:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.loading {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+.stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+/* hidden (but laid out, so the photo can load) until data + photo are ready */
+.stage.pending {
+    visibility: hidden;
+}
+
+.stage.dealt {
+    animation: deal-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+.hint {
+    margin: 0;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- flip: turn edge-on, swap face, turn back (timing matches PlayerCard.razor) ---------- */
+
+.flip.out {
+    animation: flip-out 0.17s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+.flip.in {
+    animation: flip-in 0.21s cubic-bezier(0, 0.55, 0.45, 1) both;
+}
+
+/* ---------- card (square, rigid: small tilt, snappy) ---------- */
+
+.card {
+    --mx: 0.5;
+    --my: 0.5;
+    --rx: 0deg;
+    --ry: 0deg;
+    --team-a40: color-mix(in srgb, var(--team) 40%, transparent);
+    --team-a20: color-mix(in srgb, var(--team) 20%, transparent);
+    --frame: linear-gradient(135deg, #3a3d45, #1b1d22 40%, #4a4e57 60%, #17191d);
+
+    position: relative;
+    width: min(380px, 88vw, calc(78vh * 63 / 88));
+    aspect-ratio: 63 / 88;
+    container-type: inline-size;
+    transform: perspective(1400px) rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.65);
+    /* own compositing layer, so tilting doesn't repaint the page behind it */
+    will-change: transform;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+}
+
+.card.tracking {
+    transition: transform 0.06s linear;
+}
+
+.card:focus-visible {
+    box-shadow: 0 0 0 3px #fff, 0 30px 60px rgba(0, 0, 0, 0.65);
+}
+
+.r-winner {
+    --frame: linear-gradient(135deg, var(--chrome-1), var(--chrome-2) 25%, var(--chrome-1) 45%, var(--chrome-3) 70%, var(--chrome-1));
+}
+
+.r-champion {
+    --frame: linear-gradient(135deg, var(--gold-1), var(--gold-2) 30%, var(--gold-1) 50%, var(--gold-3) 75%, var(--gold-1));
+}
+
+.face {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.face.hidden {
+    visibility: hidden;
+}
+
+/* thin metal frame (gunmetal / chrome / gold) */
+.face::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    border: 1.3cqw solid transparent;
+    background: var(--frame) border-box;
+    -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0);
+}
+
+/* team-color hairline just inside the frame */
+.front::before {
+    content: "";
+    position: absolute;
+    inset: 1.3cqw;
+    z-index: 29;
+    pointer-events: none;
+    border: 0.35cqw solid var(--team);
+}
+
+/* ======================= FRONT ======================= */
+
+.bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 45% at 50% 30%, var(--team-a40), transparent 70%),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 0.5cqw, transparent 0.5cqw 1cqw),
+        repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.35) 0 0.5cqw, transparent 0.5cqw 1cqw),
+        linear-gradient(180deg, #15161c 0%, #08090c 100%);
+}
+
+/* prism shards: hard-edged translucent planes; layout varies per driver */
+.shards {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.m0 .shards {
+    background:
+        linear-gradient(115deg, transparent 36%, var(--team-a40) 36% 44%, transparent 44%),
+        linear-gradient(115deg, transparent 50%, rgba(255, 255, 255, 0.05) 50% 68%, transparent 68%),
+        linear-gradient(65deg, transparent 62%, var(--team-a20) 62% 66%, transparent 66%);
+}
+
+.m1 .shards {
+    background:
+        linear-gradient(-120deg, transparent 30%, var(--team-a40) 30% 37%, transparent 37%),
+        linear-gradient(-120deg, transparent 42%, rgba(255, 255, 255, 0.05) 42% 58%, transparent 58%),
+        linear-gradient(30deg, transparent 70%, var(--team-a20) 70% 76%, transparent 76%);
+}
+
+.m2 .shards {
+    background:
+        linear-gradient(160deg, transparent 22%, var(--team-a20) 22% 34%, transparent 34%),
+        linear-gradient(20deg, transparent 55%, var(--team-a40) 55% 60%, transparent 60%),
+        linear-gradient(100deg, transparent 64%, rgba(255, 255, 255, 0.05) 64% 80%, transparent 80%);
+}
+
+.m3 .shards {
+    background:
+        conic-gradient(from 200deg at 100% 0%, transparent 0deg 10deg, var(--team-a20) 10deg 18deg, transparent 18deg 30deg, var(--team-a40) 30deg 34deg, transparent 34deg),
+        linear-gradient(-70deg, transparent 58%, rgba(255, 255, 255, 0.05) 58% 72%, transparent 72%);
+}
+
+/* speed streaks across the lower half */
+.streaks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(-14deg,
+        transparent 0 5.5cqw, var(--team-a40) 5.5cqw 5.8cqw, transparent 5.8cqw 9cqw,
+        rgba(255, 255, 255, 0.06) 9cqw 9.15cqw, transparent 9.15cqw 13cqw);
+    mask-image: linear-gradient(180deg, transparent 45%, #000 70%, transparent 95%);
+}
+
+.placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: var(--display);
+    font-size: 6cqw;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+/* full-bleed photo that fades into the background */
+.art {
+    position: absolute;
+    top: 1.3cqw;
+    left: 1.3cqw;
+    right: 1.3cqw;
+    height: 98cqw;
+    display: grid;
+    place-items: center;
+    mask-image: radial-gradient(ellipse 80% 78% at 50% 34%, #000 52%, transparent 100%);
+}
+
+.art img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 22%;
+    filter: contrast(1.08) saturate(1.05) brightness(0.95);
+}
+
+.art-num {
+    font-family: var(--display);
+    font-size: 78cqw;
+    font-weight: 800;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 0.5cqw rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 6cqw var(--team-a40);
+}
+
+/* champion foil strip along the top */
+.title-strip {
+    position: absolute;
+    top: 1.3cqw;
+    left: 1.3cqw;
+    right: 1.3cqw;
+    z-index: 8;
+    padding: 1.2cqw 0;
+    text-align: center;
+    font-family: var(--display);
+    font-size: 4.2cqw;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #2b1f04;
+    background: linear-gradient(90deg, var(--gold-3), var(--gold-2) 25%, var(--gold-1) 50%, var(--gold-2) 75%, var(--gold-3));
+}
+
+.topbar {
+    position: absolute;
+    top: 5.5cqw;
+    left: 6cqw;
+    right: 6cqw;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: 2cqw;
+}
+
+.r-champion .topbar {
+    top: 11.5cqw;
+}
+
+.series {
+    font-family: var(--display);
+    font-size: 6cqw;
+    font-weight: 800;
+    font-style: italic;
+    color: #fff;
+    text-shadow: 0 0.3cqw 1.2cqw rgba(0, 0, 0, 0.7);
+}
+
+.year {
+    font-family: var(--display);
+    font-size: 4.4cqw;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.75);
+    text-shadow: 0 0.3cqw 1.2cqw rgba(0, 0, 0, 0.7);
+}
+
+.spacer {
+    flex: 1;
+}
+
+.tag {
+    font-family: var(--display);
+    font-size: 3.6cqw;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.5cqw 1.8cqw;
+    color: var(--ink);
+    background: linear-gradient(90deg, var(--chrome-2), var(--chrome-1) 50%, var(--chrome-2));
+}
+
+/* classic rookie-card shield */
+.rc {
+    font-family: var(--display);
+    font-size: 4.8cqw;
+    font-weight: 800;
+    padding: 0.3cqw 1.8cqw 0.9cqw;
+    border: 0.5cqw solid #fff;
+    border-radius: 0.6cqw 0.6cqw 50% 50% / 0.6cqw 0.6cqw 45% 45%;
+    background: #c81e16;
+    color: #fff;
+    box-shadow: 0 0.6cqw 1.4cqw rgba(0, 0, 0, 0.5);
+}
+
+/* big outlined car number on the right, over the photo's fade */
+.number {
+    position: absolute;
+    right: 5cqw;
+    top: 56cqw;
+    z-index: 5;
+    font-family: var(--display);
+    font-size: 30cqw;
+    font-weight: 800;
+    font-style: italic;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 0.45cqw rgba(255, 255, 255, 0.85);
+    text-shadow: 0.8cqw 0.8cqw 0 var(--team-a40);
+}
+
+.nameblock {
+    position: absolute;
+    left: 6cqw;
+    right: 6cqw;
+    top: 88cqw;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 0.95;
+}
+
+.first {
+    font-family: var(--display);
+    font-size: 5cqw;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.last {
+    font-family: var(--display);
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: #fff;
+    white-space: nowrap;
+    text-shadow: 0 0.5cqw 2cqw rgba(0, 0, 0, 0.6);
+}
+
+/* team nameplate */
+.plate {
+    margin-top: 1.6cqw;
+    max-width: 100%;
+    padding: 0.7cqw 2.2cqw 0.7cqw 2cqw;
+    border-left: 1.2cqw solid var(--team);
+    background: rgba(255, 255, 255, 0.1);
+    font-family: var(--display);
+    font-size: 4.2cqw;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* three career numbers along the bottom */
+.headline {
+    position: absolute;
+    left: 6cqw;
+    right: 6cqw;
+    bottom: 4cqw;
+    height: 15cqw;
+    z-index: 6;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    border-top: 0.3cqw solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.headline > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+
+.headline > div + div {
+    border-left: 0.3cqw solid rgba(255, 255, 255, 0.12);
+}
+
+.h-val {
+    font-family: var(--display);
+    font-size: 9cqw;
+    font-weight: 800;
+}
+
+.h-label {
+    margin-top: 0.6cqw;
+    font-size: 3cqw;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.r-champion .headline > div:first-child .h-val {
+    color: var(--gold-2);
+}
+
+/* ---------- foil ---------- */
+
+.foil {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    mix-blend-mode: color-dodge;
+    background-size: 260% 260%, auto;
+    background-position: calc(var(--mx) * 100%) calc(var(--my) * 100%), 0 0;
+}
+
+/* refractor: rainbow sweep + fine prism lines */
+.r-winner .foil {
+    opacity: 0.35;
+    background-image:
+        linear-gradient(115deg,
+            transparent 20%, #ff6f6f 30%, #ffd86f 36%, #6fffa0 42%, #6fd2ff 48%, #b56fff 54%, transparent 64%),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 4px);
+}
+
+.r-champion .foil {
+    opacity: 0.45;
+    background-image:
+        linear-gradient(115deg,
+            transparent 20%, var(--gold-1) 32%, var(--gold-2) 40%, #fffbe8 46%, var(--gold-3) 54%, transparent 66%),
+        repeating-linear-gradient(45deg, rgba(255, 240, 200, 0.08) 0 1px, transparent 1px 4px);
+}
+
+/* ---------- glare (both faces) ---------- */
+
+.glare {
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    pointer-events: none;
+    background: radial-gradient(circle at calc(var(--mx) * 100%) calc(var(--my) * 100%),
+        rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 48%);
+    mix-blend-mode: soft-light;
+}
+
+/* ======================= BACK (stat sheet) ======================= */
+
+.back {
+    background: var(--paper);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    padding: 1.3cqw;
+}
+
+.sheet-head {
+    display: flex;
+    align-items: center;
+    gap: 3cqw;
+    padding: 4.5cqw 5cqw 4cqw;
+    background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 0.5cqw, transparent 0.5cqw 1cqw),
+        linear-gradient(135deg, #1a1b21, #0b0c10);
+    border-bottom: 1cqw solid var(--team);
+    color: #fff;
+}
+
+.sh-num {
+    font-family: var(--display);
+    font-size: 15cqw;
+    font-weight: 800;
+    font-style: italic;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 0.4cqw #fff;
+}
+
+.sh-who {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.1;
+}
+
+.sh-name {
+    font-family: var(--display);
+    font-size: 7.4cqw;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sh-sub {
+    font-size: 3.6cqw;
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.section {
+    padding: 3.2cqw 5cqw 0;
+}
+
+h3 {
+    margin: 0 0 1.8cqw;
+    font-family: var(--display);
+    font-size: 4.2cqw;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    border-bottom: 0.4cqw solid var(--ink);
+    padding-bottom: 0.8cqw;
+}
+
+h3 .muted {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--muted);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+}
+
+.stat .v {
+    font-family: var(--display);
+    font-size: 7.6cqw;
+    font-weight: 800;
+}
+
+.stat .v small {
+    font-size: 4cqw;
+    color: var(--muted);
+}
+
+.stat .l {
+    font-size: 3cqw;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+}
+
+.big-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 2cqw;
+}
+
+.stat.big .v {
+    font-size: 11cqw;
+}
+
+.grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 1.6cqw;
+}
+
+.grid4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.pips {
+    display: flex;
+    gap: 1.8cqw;
+}
+
+.pip {
+    flex: 1;
+    height: 9cqw;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    border: 0.4cqw solid rgba(17, 17, 23, 0.25);
+    font-family: var(--display);
+    font-size: 5.4cqw;
+    font-weight: 800;
+}
+
+.pip.p1  { background: #f2c94c; border-color: #b8901c; }
+.pip.p2  { background: #d6dae1; border-color: #9aa1ac; }
+.pip.p3  { background: #e2a678; border-color: #a86c40; }
+.pip.out { background: #c2362b; border-color: #8f2219; color: #fff; font-size: 3.8cqw; }
+
+.sheet-foot {
+    margin-top: auto;
+    padding: 2.4cqw 5cqw 3cqw;
+    display: flex;
+    justify-content: space-between;
+    gap: 2cqw;
+    font-size: 3cqw;
+    font-style: italic;
+    color: var(--muted);
+    border-top: 0.3cqw solid var(--paper-2);
+}
+
+.sheet-foot a {
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+/* ---------- keyframes ---------- */
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes deal-in {
+    from { transform: translateY(24px) scale(0.96); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+}
+
+@keyframes flip-out {
+    from { transform: perspective(1400px) rotateY(0deg); }
+    to   { transform: perspective(1400px) rotateY(90deg); }
+}
+
+@keyframes flip-in {
+    from { transform: perspective(1400px) rotateY(-90deg); }
+    to   { transform: perspective(1400px) rotateY(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .stage.dealt,
+    .flip.out,
+    .flip.in {
+        animation: none;
+    }
+
+    .card,
+    .card.tracking {
+        transition: none;
+    }
+}

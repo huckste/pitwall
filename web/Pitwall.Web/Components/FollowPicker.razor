@@ -1,0 +1,59 @@
+@* Choose which drivers to watch. Grouped by series, filterable by name or team. *@
+<div class="picker">
+  <div class="picker-head">
+    <div>
+      <h2>Choose drivers to watch</h2>
+      <p>@Followed.Count selected. Pick anyone, in any series.</p>
+    </div>
+    @if (Followed.Count > 0)
+    {
+      <button class="done" @onclick="OnDone">Done</button>
+    }
+  </div>
+
+  <input class="search" type="search" placeholder="Search driver or team…"
+         @bind="query" @bind:event="oninput" />
+
+  @foreach (var series in Filtered)
+  {
+    <div class="group">
+      <h3 style="--accent: @SeriesInfo.Accent(series.Key)">@SeriesInfo.Name(series.Key)</h3>
+      <div class="options">
+        @foreach (var d in series)
+        {
+          var on = Followed.Contains(d.DriverId);
+          <button class="option @(on ? "on" : "")" aria-pressed="@on"
+                  @onclick="() => OnToggle.InvokeAsync(d.DriverId)">
+            <span class="check" aria-hidden="true">@(on ? "✓" : "+")</span>
+            <span class="opt-text">
+              <span class="opt-name">@d.FirstName <b>@d.LastName</b></span>
+              <span class="opt-team">@d.Team</span>
+            </span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (!Filtered.Any())
+  {
+    <p class="empty">No drivers match “@query”.</p>
+  }
+</div>
+
+@code {
+  [Parameter, EditorRequired] public List<LatestResult> Drivers { get; set; } = new();
+  [Parameter, EditorRequired] public HashSet<int> Followed { get; set; } = new();
+  [Parameter] public EventCallback<int> OnToggle { get; set; }
+  [Parameter] public EventCallback OnDone { get; set; }
+
+  private string query = "";
+
+  private IEnumerable<IGrouping<string, LatestResult>> Filtered =>
+    Drivers
+      .Where(d => string.IsNullOrWhiteSpace(query)
+                  || $"{d.FirstName} {d.LastName} {d.Team}".Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
+      .OrderBy(d => d.LastName)
+      .GroupBy(d => d.Series)
+      .OrderBy(g => SeriesInfo.Name(g.Key));
+}

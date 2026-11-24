@@ -70,6 +70,7 @@ type SeasonTeam struct {
 	Name      string  `json:"name"`
 	ShortName *string `json:"shortName"`
 	FullName  *string `json:"fullName"`
+	Color     *string `json:"color"`
 }
 
 type driversResponse struct {

@@ -8,6 +8,7 @@ import (
 	"pitwall/backend/db"
 	"pitwall/backend/ingest"
 	"pitwall/backend/models"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -28,6 +29,7 @@ func main() {
 
 	http.HandleFunc("/health", healthHandler)
 	http.HandleFunc("/latest-results", latestResultHandler(pool))
+	http.HandleFunc("GET /drivers/{id}/card", driverCardHandler(pool))
 
 	log.Println("pitwall backend listening on :8080")
 
@@ -43,6 +45,11 @@ func main() {
 				if err := ingest.SyncSeason(ctx, pool, s, time.Now().Year()); err != nil {
 					log.Printf("poller: %s sync failed: %v", s, err)
 				}
+			}
+
+			// after the series sync, so newly added drivers get a photo lookup
+			if err := ingest.SyncPhotos(ctx, pool); err != nil {
+				log.Printf("poller: photo sync failed: %v", err)
 			}
 
 			<-ticker.C
@@ -78,4 +85,27 @@ func withCORS(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func driverCardHandler(pool *pgxpool.Pool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "driver id must be a number", http.StatusBadRequest)
+			return
+		}
+
+		card, err := db.GetDriverCard(r.Context(), pool, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if card == nil {
+			http.Error(w, "no race results for this driver", http.StatusNotFound)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(card)
+	}
 }

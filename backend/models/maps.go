@@ -65,6 +65,7 @@ func MapSeasonTeam(t ocb.SeasonTeam, series Series) db.Team {
 		Name:      t.Name,
 		ShortName: shortName,
 		FullName:  fullName,
+		Color:     t.Color,
 	}
 }
 

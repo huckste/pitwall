@@ -1,5 +1,55 @@
+/* ---------- design tokens ---------- */
+
+:root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface-2: #eef0f3;
+    --border: #e3e6ea;
+    --text: #15181d;
+    --text-muted: #6b7280;
+    --radius: 12px;
+
+    /* one accent per series (generic, not brand colors) */
+    --accent-1: #e0352b;
+    --accent-2: #2563eb;
+    --accent-3: #7c3aed;
+    --accent-4: #0d9488;
+    --accent-5: #d97706;
+
+    --gold: #f5c542;
+    --silver: #c9ced6;
+    --bronze: #d89a6a;
+    --on-medal: #15181d;
+
+    --danger: #b42318;
+    --danger-bg: #fde8e7;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0f1115;
+        --surface: #171a20;
+        --surface-2: #222630;
+        --border: #2a2f3a;
+        --text: #e8eaee;
+        --text-muted: #9097a3;
+
+        --accent-1: #ff5a4e;
+        --accent-2: #5b8cff;
+        --accent-3: #a78bfa;
+        --accent-4: #2dd4bf;
+        --accent-5: #fbbf24;
+
+        --danger: #ff8a80;
+        --danger-bg: #3a1c1c;
+    }
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
 }
 
 h1:focus {

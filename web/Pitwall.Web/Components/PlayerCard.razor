@@ -1,0 +1,343 @@
+@* Collector card for one driver. Front = who they are; back = the stat sheet. *@
+@using System.Text.RegularExpressions
+@inject HttpClient Http
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="overlay" tabindex="-1" @ref="overlayRef" @onclick="Close" @onkeydown="OnOverlayKeyDown">
+  <button class="close" aria-label="Close card" @onclick="Close">✕</button>
+
+  @if (!Ready)
+  {
+    <div class="loading" aria-live="polite">Loading card…</div>
+  }
+
+  <div class="stage @(Ready ? "dealt" : "pending")" @onclick:stopPropagation="true">
+    <div class="flip @flipPhase">
+      <div class="card r-@(card?.Rarity ?? "base") m@(DriverId % 4)"
+           style="--accent: @SeriesInfo.Accent(card?.Series ?? Series); --team: @TeamColor"
+           role="button" tabindex="0"
+           aria-label="@(showBack ? "Show card front" : "Show card stats")"
+           @ref="cardRef" @onclick="Flip" @onkeydown="OnCardKeyDown">
+
+        @if (card is null)
+        {
+          <div class="face front">
+            <div class="bg"></div>
+            <div class="placeholder">@(notFound ? "No races yet" : "Couldn't load card")</div>
+          </div>
+        }
+        else
+        {
+          @* Both faces stay in the page and the hidden one is just invisible,
+             so the photo never reloads (and flashes) when flipping back. *@
+
+          @* ---------------- FRONT ---------------- *@
+          <div class="face front @(showBack ? "hidden" : "")">
+            <div class="bg"></div>
+            <div class="shards"></div>
+            <div class="streaks"></div>
+
+            <div class="art">
+              @if (HasPhoto)
+              {
+                <img src="@card.PhotoUrl" alt="@card.FirstName @card.LastName"
+                     referrerpolicy="no-referrer" draggable="false"
+                     @onload="PhotoSettled" @onerror="PhotoFailed" />
+              }
+              else
+              {
+                <span class="art-num" aria-hidden="true">@NumberText</span>
+              }
+            </div>
+
+            @if (card.Rarity == "champion")
+            {
+              <div class="title-strip">@ChampionText</div>
+            }
+
+            <div class="topbar">
+              <span class="series">@SeriesInfo.Short(card.Series)</span>
+              <span class="year">@card.SeasonYear</span>
+              <span class="spacer"></span>
+              @if (card.Rarity == "winner")
+              {
+                <span class="tag">Race Winner</span>
+              }
+              @if (card.Career.IsRookie)
+              {
+                <span class="rc" title="Rookie card">RC</span>
+              }
+            </div>
+
+            @if (card.Number is not null)
+            {
+              <span class="number" aria-hidden="true">@card.Number</span>
+            }
+
+            <div class="nameblock">
+              <span class="first">@card.FirstName</span>
+              <span class="last" style="font-size: @(NameSize)cqw">@card.LastName</span>
+              <span class="plate">@card.Team</span>
+            </div>
+
+            <div class="headline">
+              <div><span class="h-val">@card.Career.Titles</span><span class="h-label">@(card.Career.Titles == 1 ? "Title" : "Titles")</span></div>
+              <div><span class="h-val">@card.Career.Wins</span><span class="h-label">Wins</span></div>
+              <div><span class="h-val">@card.Career.Podiums</span><span class="h-label">Podiums</span></div>
+            </div>
+
+            <div class="foil"></div>
+            <div class="glare"></div>
+          </div>
+
+          @* ---------------- BACK (stat sheet) ---------------- *@
+          <div class="face back @(showBack ? "" : "hidden")">
+            <div class="sheet-head">
+              <span class="sh-num">@NumberText</span>
+              <div class="sh-who">
+                <span class="sh-name">@card.FirstName @card.LastName</span>
+                <span class="sh-sub">@card.Team@(card.Nationality is null ? "" : $" · {card.Nationality}")</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>@card.SeasonYear season</h3>
+              <div class="big-pair">
+                <div class="stat big"><span class="v">P@(card.ChampPos)<small>/@card.ChampOf</small></span><span class="l">Championship</span></div>
+                <div class="stat big"><span class="v">@card.Points.ToString("0.#")</span><span class="l">Points</span></div>
+              </div>
+              <div class="grid3">
+                <div class="stat"><span class="v">@card.Starts</span><span class="l">Starts</span></div>
+                <div class="stat"><span class="v">@card.Wins</span><span class="l">Wins</span></div>
+                <div class="stat"><span class="v">@card.Podiums</span><span class="l">Podiums</span></div>
+                <div class="stat"><span class="v">@(card.BestFinish is int b ? $"P{b}" : "–")</span><span class="l">Best</span></div>
+                <div class="stat"><span class="v">@(card.AvgFinish is double a ? a.ToString("0.0") : "–")</span><span class="l">Avg finish</span></div>
+                <div class="stat"><span class="v">@card.DNFs</span><span class="l">DNF</span></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>Last @card.RecentForm.Count races</h3>
+              <div class="pips">
+                @foreach (var f in Enumerable.Reverse(card.RecentForm))
+                {
+                  <span class="pip @PipClass(f)" title="@f.Event">@PipText(f)</span>
+                }
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>Career <span class="muted">· @SeriesInfo.Name(card.Series), seasons on record</span></h3>
+              <div class="grid4">
+                <div class="stat"><span class="v">@card.Career.Seasons</span><span class="l">Seasons</span></div>
+                <div class="stat"><span class="v">@card.Career.Starts</span><span class="l">Starts</span></div>
+                <div class="stat"><span class="v">@card.Career.Wins</span><span class="l">Wins</span></div>
+                <div class="stat"><span class="v">@card.Career.Titles</span><span class="l">Titles</span></div>
+              </div>
+            </div>
+
+            <div class="sheet-foot">
+              <span>@RarityReason</span>
+              @if (card.PhotoPage is not null)
+              {
+                <a href="@card.PhotoPage" target="_blank" rel="noopener"
+                   @onclick:stopPropagation="true">Photo: Wikimedia Commons</a>
+              }
+            </div>
+            <div class="glare"></div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <p class="hint">Click the card to flip · Esc to close</p>
+  </div>
+</div>
+
+@code {
+  [Parameter, EditorRequired] public int DriverId { get; set; }
+  // Series of the clicked row, so the card has the right color while loading.
+  [Parameter] public string Series { get; set; } = "";
+  [Parameter] public EventCallback OnClose { get; set; }
+
+  // Flip timing: the card turns edge-on, swaps faces, then turns back. Keep in sync with the CSS.
+  private const int FlipOutMs = 170;
+  private const int FlipInMs = 210;
+  // Don't hold the card back forever waiting on a slow photo.
+  private const int PhotoWaitMs = 1500;
+
+  private DriverCard? card;
+  private bool loaded;
+  private bool notFound;
+  private bool photoFailed;
+  private bool photoSettled;
+  private bool photoWaitOver;
+  private bool showBack;
+  private bool flipping;
+  private string flipPhase = "";
+
+  private ElementReference overlayRef;
+  private ElementReference cardRef;
+  private IJSObjectReference? module;
+  private IJSObjectReference? tilt;
+
+  protected override async Task OnInitializedAsync()
+  {
+    try
+    {
+      var response = await Http.GetAsync($"drivers/{DriverId}/card");
+      if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+      {
+        notFound = true;
+        return;
+      }
+      response.EnsureSuccessStatusCode();
+      card = await response.Content.ReadFromJsonAsync<DriverCard>();
+
+      // An older API build won't send career/rarity; without this the render
+      // hits a null and takes down the whole app instead of just this card.
+      if (card is { Career: null } or { Rarity: null })
+      {
+        card = null;
+      }
+    }
+    catch (Exception)
+    {
+      card = null;
+    }
+    finally
+    {
+      loaded = true;
+    }
+
+    if (card?.PhotoUrl is not null)
+    {
+      _ = StopWaitingForPhoto();
+    }
+  }
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender)
+    {
+      return;
+    }
+    // the card is still hidden while loading and can't take focus yet; the overlay can, so Esc works at once
+    await overlayRef.FocusAsync();
+    try
+    {
+      module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/playerCard.js");
+      tilt = await module.InvokeAsync<IJSObjectReference>("attachTilt", cardRef);
+    }
+    catch (JSException)
+    {
+      // tilt is decoration; the card works without it
+    }
+  }
+
+  // The card is dealt in only once its data and photo are ready, so it never
+  // appears half-drawn and then pops the photo in.
+  private bool Ready => loaded && (card?.PhotoUrl is null || photoSettled || photoFailed || photoWaitOver);
+
+  private async Task StopWaitingForPhoto()
+  {
+    await Task.Delay(PhotoWaitMs);
+    photoWaitOver = true;
+    await InvokeAsync(StateHasChanged);
+  }
+
+  private void PhotoSettled() => photoSettled = true;
+
+  private void PhotoFailed() => photoFailed = true;
+
+  // Two-step turn instead of a 3D double-sided card: only one face is visible
+  // at a time, so there's nothing for the browser to fold or clip mid-flip.
+  private async Task Flip()
+  {
+    if (card is null || flipping)
+    {
+      return;
+    }
+    flipping = true;
+
+    flipPhase = "out";
+    StateHasChanged();
+    await Task.Delay(FlipOutMs);
+
+    showBack = !showBack;
+    flipPhase = "in";
+    StateHasChanged();
+    await Task.Delay(FlipInMs);
+
+    flipPhase = "";
+    flipping = false;
+  }
+
+  private Task Close() => OnClose.InvokeAsync();
+
+  private Task OnOverlayKeyDown(KeyboardEventArgs e) => e.Key == "Escape" ? Close() : Task.CompletedTask;
+
+  private Task OnCardKeyDown(KeyboardEventArgs e) => e.Key is "Enter" or " " ? Flip() : Task.CompletedTask;
+
+  private bool HasPhoto => card?.PhotoUrl is not null && !photoFailed;
+
+  private string NumberText => card?.Number?.ToString() ?? "–";
+
+  // Only accept a plain hex color from the API, since it goes into a style attribute.
+  private string TeamColor =>
+    card?.TeamColor is { } c && Regex.IsMatch(c, "^#?[0-9a-fA-F]{6}$")
+      ? (c.StartsWith('#') ? c : "#" + c)
+      : "var(--accent)";
+
+  // Long surnames shrink so they always fit on one line.
+  private double NameSize => Math.Clamp(165.0 / Math.Max(card?.LastName.Length ?? 1, 1), 9, 17);
+
+  private string ChampionText => card?.Career.TitleYears.Count switch
+  {
+    1 => $"★ {card.Career.TitleYears[0]} {SeriesInfo.Short(card.Series)} Champion",
+    > 1 => $"★ {card.Career.TitleYears.Count}× {SeriesInfo.Short(card.Series)} Champion",
+    _ => "★ Champion"
+  };
+
+  private string RarityReason => card?.Rarity switch
+  {
+    "champion" => $"Champion card · titles: {string.Join(", ", card.Career.TitleYears)}",
+    "winner" => $"Race winner card · {card.Career.Wins} win{(card.Career.Wins == 1 ? "" : "s")} on record",
+    "rookie" => "Rookie card · first season on record",
+    _ => "Base card"
+  };
+
+  private static string PipText(FormResult f) =>
+    f.Outcome != "finished" ? f.Outcome.ToUpper()
+    : int.TryParse(f.Position, out var p) ? p.ToString()
+    : f.Position ?? "–";
+
+  private static string PipClass(FormResult f) =>
+    f.Outcome != "finished" ? "out" : f.Position switch
+    {
+      "1" => "p1",
+      "2" => "p2",
+      "3" => "p3",
+      _ => ""
+    };
+
+  public async ValueTask DisposeAsync()
+  {
+    try
+    {
+      if (tilt is not null)
+      {
+        await tilt.InvokeVoidAsync("dispose");
+        await tilt.DisposeAsync();
+      }
+      if (module is not null)
+      {
+        await module.DisposeAsync();
+      }
+    }
+    catch (JSDisconnectedException)
+    {
+    }
+  }
+}
