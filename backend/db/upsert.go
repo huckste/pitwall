@@ -43,6 +43,17 @@ type Event struct {
 	SeasonOCBID string
 }
 
+type Session struct {
+	OCBID      string
+	Type       string
+	Name       string
+	Status     string
+	StartTime  *time.Time
+	EndTime    *time.Time
+	EventOCBID string
+	Series     string
+}
+
 func UpsertTeam(ctx context.Context, pool *pgxpool.Pool, t Team) error {
 	_, err := pool.Exec(ctx, `
 		INSERT INTO teams (ocb_id, series, name, short_name, full_name)
@@ -97,6 +108,23 @@ func UpsertEvent(ctx context.Context, pool *pgxpool.Pool, e Event) error {
 			status = EXCLUDED.status,
 			season_id = EXCLUDED.season_id
 		`, e.OCBID, e.Series, e.Name, e.DateStart, e.DateEnd, e.Status, e.SeasonOCBID)
+
+	return err
+}
+
+func UpsertSession(ctx context.Context, pool *pgxpool.Pool, s Session) error {
+	_, err := pool.Exec(ctx, `
+		INSERT INTO sessions (ocb_id, type, name, status, start_time, end_time, event_id)
+		VALUES ($1, $2, $3, $4, $5, $6,
+			(SELECT id FROM events WHERE ocb_id = $7 AND series = $8)) 
+		ON CONFLICT (ocb_id) DO UPDATE
+		SET name = EXCLUDED.name,
+			start_time = EXCLUDED.start_time,
+			end_time = EXCLUDED.end_time,
+			event_id = EXCLUDED.event_id,
+			type = EXCLUDED.type,
+			status = EXCLUDED.status
+		`, s.OCBID, s.Type, s.Name, s.Status, s.StartTime, s.EndTime, s.EventOCBID, s.Series)
 
 	return err
 }

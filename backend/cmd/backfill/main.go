@@ -55,6 +55,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	sessionCount := 0
+
 	for _, e := range events {
 		ev, err := models.MapEvent(e, models.Formula1, season2025.ID)
 		if err != nil {
@@ -64,7 +66,21 @@ func main() {
 		if err := db.UpsertEvent(ctx, pool, ev); err != nil {
 			log.Fatal(err)
 		}
+
+		for _, sess := range e.Schedule {
+			session, err := models.MapSession(sess, models.Formula1, e.ID)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if err := db.UpsertSession(ctx, pool, session); err != nil {
+				log.Fatal(err)
+			}
+			sessionCount++
+		}
 	}
+
+	log.Printf("upserted %d sessions for formula1 2025\n", sessionCount)
 	log.Printf("upserted %d events for formula1 2025\n", len(events))
 
 	teams, err := ocb.FetchSeasonTeams("formula1", season2025.ID)

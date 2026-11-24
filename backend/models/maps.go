@@ -131,3 +131,35 @@ func MapEvent(e ocb.Event, series Series, seasonOCBID string) (db.Event, error) 
 		SeasonOCBID: seasonOCBID,
 	}, nil
 }
+
+func MapSession(s ocb.ScheduleSession, series Series, eventOCBID string) (db.Session, error) {
+	var start *time.Time
+	var end *time.Time
+
+	if s.StartTime != "" {
+		t, err := time.Parse(time.RFC3339, s.StartTime)
+		if err != nil {
+			return db.Session{}, err
+		}
+		start = &t
+	}
+
+	if s.EndTime != "" {
+		t, err := time.Parse(time.RFC3339, s.EndTime)
+		if err != nil {
+			return db.Session{}, err
+		}
+		end = &t
+	}
+
+	return db.Session{
+		OCBID:      s.ID,
+		Type:       s.Type,
+		Name:       s.Name,
+		Status:     s.Status,
+		Series:     string(series),
+		EventOCBID: eventOCBID,
+		StartTime:  start,
+		EndTime:    end,
+	}, nil
+}
