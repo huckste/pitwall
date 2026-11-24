@@ -1,7 +1,71 @@
 ﻿@page "/"
+@using Pitwall.Shared
+@inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Pitwall</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Latest results</h1>
 
-Welcome to your new app.
+@if (error is not null)
+{
+  <p class="text-danger">Couldn't load results: @error</p>
+}
+else if (results is null)
+{
+  <p>Loading…</p>
+}
+else
+{
+  @foreach (var series in results.GroupBy(r => r.Series))
+  {
+    <h2>@series.Key</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Driver</th>
+          <th>Team</th>
+          <th>Last race</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var r in series.OrderByDescending(r => r.StartTime).ThenBy(r => SortKey(r.Position)))
+        {
+          <tr>
+            <td>@r.FirstName @r.LastName</td>
+            <td>@r.Team</td>
+            <td>@r.Event</td>
+            <td>@ResultText(r)</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}
+
+@code {
+  private List<LatestResult>? results;
+  private string? error;
+
+  protected override async Task OnInitializedAsync()
+  {
+    try
+    {
+      results = await Http.GetFromJsonAsync<List<LatestResult>>("latest-results");
+    }
+    catch (Exception ex)
+    {
+      error = ex.Message;
+    }
+  }
+
+  private static int SortKey(string? position) =>
+      int.TryParse(position, out var p) ? p : int.MaxValue;
+
+  // Always show the finishing position; tag it when the driver didn't finish.
+  private static string ResultText(LatestResult r)
+  {
+    var pos = int.TryParse(r.Position, out var p) ? $"P{p}" : r.Position ?? "–";
+    return r.Outcome == "finished" ? pos : $"{pos} · {r.Outcome.ToUpper()}";
+  }
+}

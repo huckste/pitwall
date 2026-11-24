@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "wNOUoAQYA4k=",
+  "dgSpecHash": "r5GS4q5BaPQ=",
   "success": true,
   "projectFilePath": "/home/huckstes/Projects/pitwall/web/Pitwall.Web/Pitwall.Web.csproj",
   "expectedPackageFiles": [
-    "/home/huckstes/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.12/microsoft.aspnetcore.app.internal.assets.10.0.12.nupkg.sha512",
+    "/home/huckstes/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.14/microsoft.aspnetcore.app.internal.assets.10.0.14.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.aspnetcore.authorization/10.0.12/microsoft.aspnetcore.authorization.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.aspnetcore.components/10.0.12/microsoft.aspnetcore.components.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.aspnetcore.components.analyzers/10.0.12/microsoft.aspnetcore.components.analyzers.10.0.12.nupkg.sha512",
@@ -13,7 +13,7 @@
     "/home/huckstes/.nuget/packages/microsoft.aspnetcore.components.webassembly/10.0.12/microsoft.aspnetcore.components.webassembly.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.aspnetcore.components.webassembly.devserver/10.0.12/microsoft.aspnetcore.components.webassembly.devserver.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.aspnetcore.metadata/10.0.12/microsoft.aspnetcore.metadata.10.0.12.nupkg.sha512",
-    "/home/huckstes/.nuget/packages/microsoft.dotnet.hotreload.webassembly.browser/10.0.112/microsoft.dotnet.hotreload.webassembly.browser.10.0.112.nupkg.sha512",
+    "/home/huckstes/.nuget/packages/microsoft.dotnet.hotreload.webassembly.browser/10.0.114/microsoft.dotnet.hotreload.webassembly.browser.10.0.114.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.extensions.configuration/10.0.12/microsoft.extensions.configuration.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.12/microsoft.extensions.configuration.abstractions.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.extensions.configuration.binder/10.0.12/microsoft.extensions.configuration.binder.10.0.12.nupkg.sha512",
@@ -34,10 +34,9 @@
     "/home/huckstes/.nuget/packages/microsoft.extensions.validation/10.0.12/microsoft.extensions.validation.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.jsinterop/10.0.12/microsoft.jsinterop.10.0.12.nupkg.sha512",
     "/home/huckstes/.nuget/packages/microsoft.jsinterop.webassembly/10.0.12/microsoft.jsinterop.webassembly.10.0.12.nupkg.sha512",
-    "/home/huckstes/.nuget/packages/microsoft.net.illink.tasks/10.0.12/microsoft.net.illink.tasks.10.0.12.nupkg.sha512",
-    "/home/huckstes/.nuget/packages/microsoft.net.sdk.webassembly.pack/10.0.12/microsoft.net.sdk.webassembly.pack.10.0.12.nupkg.sha512",
-    "/home/huckstes/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/10.0.12/microsoft.netcore.app.runtime.mono.browser-wasm.10.0.12.nupkg.sha512",
-    "/home/huckstes/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.12/microsoft.aspnetcore.app.ref.10.0.12.nupkg.sha512"
+    "/home/huckstes/.nuget/packages/microsoft.net.illink.tasks/10.0.14/microsoft.net.illink.tasks.10.0.14.nupkg.sha512",
+    "/home/huckstes/.nuget/packages/microsoft.net.sdk.webassembly.pack/10.0.14/microsoft.net.sdk.webassembly.pack.10.0.14.nupkg.sha512",
+    "/home/huckstes/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/10.0.14/microsoft.netcore.app.runtime.mono.browser-wasm.10.0.14.nupkg.sha512"
   ],
   "logs": []
 }

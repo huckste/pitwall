@@ -18,6 +18,7 @@ type LatestResult struct {
 	Position  *string    `json:"position"`
 	Points    *float64   `json:"points"`
 	Status    string     `json:"status"`
+	Outcome   string     `json:"outcome"`
 }
 
 func LatestRaceResult(ctx context.Context, pool *pgxpool.Pool) ([]LatestResult, error) {
@@ -32,7 +33,15 @@ func LatestRaceResult(ctx context.Context, pool *pgxpool.Pool) ([]LatestResult, 
 			s.start_time,
 			r.position,
 			r.points,
-			r.status
+			r.status,
+			-- status words differ per series (F1 "OK", F2/F3/FE "", IndyCar "Running"),
+			-- so normalize them here once for every frontend
+			case
+				when r.status in ('', 'OK', 'Running') then 'finished'
+				when r.status = 'DNS' then 'dns'
+				when r.status = 'DSQ' then 'dsq'
+				else 'dnf'
+			end as outcome
 		from drivers d
 		join results r 
 			on r.driver_id = d.id
@@ -56,7 +65,7 @@ func LatestRaceResult(ctx context.Context, pool *pgxpool.Pool) ([]LatestResult, 
 	for rows.Next() {
 		var lr LatestResult
 		if err := rows.Scan(&lr.DriverID, &lr.FirstName, &lr.LastName, &lr.Series,
-			&lr.Team, &lr.Event, &lr.StartTime, &lr.Position, &lr.Points, &lr.Status); err != nil {
+			&lr.Team, &lr.Event, &lr.StartTime, &lr.Position, &lr.Points, &lr.Status, &lr.Outcome); err != nil {
 			return nil, err
 		}
 		out = append(out, lr)
