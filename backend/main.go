@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 	"pitwall/backend/db"
+	"pitwall/backend/ingest"
+	"pitwall/backend/models"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -27,6 +30,21 @@ func main() {
 	http.HandleFunc("/latest-results", latestResultHandler(pool))
 
 	log.Println("pitwall backend listening on :8080")
+
+	go func() {
+		ticker := time.NewTicker(6 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			log.Println("poller: syncing current season")
+			if err := ingest.SyncSeason(ctx, pool, models.Formula1, time.Now().Year()); err != nil {
+				log.Printf("poller: sync failed: %v", err)
+			}
+
+			<-ticker.C
+		}
+	}()
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
