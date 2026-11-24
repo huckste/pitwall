@@ -23,24 +23,6 @@ const (
 	WRC           Series = "wrc"
 )
 
-func MapOCBDriver(d ocb.Driver, series Series) Driver {
-	var nationality *string
-
-	if d.Country.Name != nil {
-		nationality = d.Country.Name
-	}
-
-	return Driver{
-		ID:           d.ID,
-		FirstName:    d.FirstName,
-		LastName:     d.LastName,
-		Series:       series,
-		DriverNumber: d.Number,
-		TeamName:     nil,
-		Nationality:  nationality,
-	}
-}
-
 func MapSeasonDriver(d ocb.SeasonDriver, series Series) db.Driver {
 	var teamID *string
 	best := 0
@@ -64,21 +46,6 @@ func MapSeasonDriver(d ocb.SeasonDriver, series Series) db.Driver {
 		Number:      d.Number,
 		Nationality: d.Country.Name,
 	}
-}
-
-func MapOCBEvent(e ocb.Event, series Series) (Race, error) {
-	date, err := time.Parse("2006-01-02", e.DateStart)
-	if err != nil {
-		return Race{}, err
-	}
-
-	return Race{
-		ID:     e.ID,
-		Series: series,
-		Name:   e.Name,
-		Date:   date,
-		Round:  0,
-	}, nil
 }
 
 func MapSeasonTeam(t ocb.SeasonTeam, series Series) db.Team {

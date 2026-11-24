@@ -85,27 +85,6 @@ func FetchSeasonDrivers(sport, seasonID string) ([]SeasonDriver, error) {
 	return drivers, nil
 }
 
-func FetchEvents(sport string) ([]Event, error) {
-	url := fmt.Sprintf("%s/%s/events", baseURL, sport)
-	var parsed eventsResponse
-
-	if err := get(url, &parsed); err != nil {
-		return nil, err
-	}
-
-	return parsed.Data, nil
-}
-
-func MostRecentCompletedEvent(events []Event) (*Event, bool) {
-	for _, e := range events {
-		if e.Status == "completed" {
-			return &e, true
-		}
-	}
-
-	return nil, false
-}
-
 func FetchSeasons(sport string) ([]Season, error) {
 	url := fmt.Sprintf("%s/%s/seasons?page=1&limit=10", baseURL, sport)
 	var parsed seasonsResponse
